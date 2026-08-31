@@ -18,6 +18,12 @@ export interface RequestOptions {
   idempotencyKey?: string;
 }
 
+export interface UploadAsset {
+  uri: string;
+  name?: string;
+  mimeType?: string;
+}
+
 let refreshInFlight: Promise<boolean> | null = null;
 
 export function getApiBaseUrl(): string {
@@ -159,6 +165,38 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       }
     }
 
+    throw error;
+  }
+}
+
+async function rawUpload<T>(path: string, asset: UploadAsset): Promise<ResponseEnvelope<T>> {
+  const form = new FormData();
+  form.append('image', {
+    uri: asset.uri,
+    name: asset.name ?? 'image.jpg',
+    type: asset.mimeType ?? 'image/jpeg',
+  } as unknown as Blob);
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-Request-Id': createRequestId(),
+    'X-Device-Install-Id': await getOrCreateInstallId(),
+  };
+  const token = useAuthStore.getState().accessToken;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(buildUrl(path), { method: 'POST', headers, body: form });
+  const parsed = await parseBody(response);
+  if (!response.ok) {
+    throw new ApiError(isProblemDetails(parsed) ? parsed : fallbackProblem("L'envoi de l'image a échoué."));
+  }
+  return unwrapEnvelope<T>(parsed);
+}
+
+export async function apiUpload<T>(path: string, asset: UploadAsset): Promise<ResponseEnvelope<T>> {
+  try {
+    return await rawUpload<T>(path, asset);
+  } catch (error) {
+    const unauthorized = error instanceof ApiError && error.problem.status === 401;
+    if (unauthorized && await refreshSession()) return rawUpload<T>(path, asset);
     throw error;
   }
 }

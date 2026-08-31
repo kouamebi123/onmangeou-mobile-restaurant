@@ -40,6 +40,12 @@ const config: ExpoConfig = {
     'expo-secure-store',
     'expo-font',
     'expo-image',
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'OnMangeOu utilise vos photos pour illustrer votre restaurant et vos plats.',
+      },
+    ],
   ],
   experiments: {
     typedRoutes: false,

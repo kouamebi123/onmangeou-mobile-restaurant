@@ -6,7 +6,7 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 FROM deps AS build
 ARG EXPO_PUBLIC_API_URL=https://onmangeou-backend-api-production.up.railway.app/api/v1

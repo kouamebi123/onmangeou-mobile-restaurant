@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +11,12 @@ import {
   fetchEstablishments,
   fetchProducts,
   setProductAvailability,
+  updateProduct,
+  changeProductPrice,
+  uploadProductImage,
+  type MerchantProduct,
 } from '@/api/merchant';
+import type { UploadAsset } from '@/api/client';
 import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
@@ -22,6 +28,7 @@ import { Screen } from '@/components/screen';
 import { SectionHeading } from '@/components/section-heading';
 import { Skeleton } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
+import { ImagePickerField } from '@/components/image-picker-field';
 import { t } from '@/i18n';
 import { useMerchantStore } from '@/store/merchant-store';
 import { tokens } from '@/theme';
@@ -58,6 +65,8 @@ export function CatalogScreen() {
   });
 
   const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<MerchantProduct>();
+  const [image, setImage] = useState<UploadAsset>();
 
   const form = useForm<ProductValues>({
     resolver: zodResolver(productSchema),
@@ -65,19 +74,40 @@ export function CatalogScreen() {
   });
 
   const create = useMutation({
-    mutationFn: (values: ProductValues) =>
-      createProduct({
+    mutationFn: async (values: ProductValues) => {
+      const result = await createProduct({
         establishmentId: selectedId ?? '',
         name: values.name,
         description: values.description,
         basePriceAmount: values.basePriceAmount,
-      }),
+      });
+      if (image) await uploadProductImage(result.productId, image);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'products', selectedId] });
       form.reset();
+      setImage(undefined);
       setFormOpen(false);
     },
   });
+
+  const saveEdit = useMutation({
+    mutationFn: async (values: ProductValues) => {
+      if (!editing) return;
+      await updateProduct(editing.id, { name: values.name, description: values.description });
+      if (values.basePriceAmount !== editing.price.amount) await changeProductPrice(editing.id, values.basePriceAmount);
+      if (image) await uploadProductImage(editing.id, image);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['merchant', 'products', selectedId] });
+      setEditing(undefined); setImage(undefined); setFormOpen(false); form.reset();
+    },
+  });
+
+  function openEditor(product: MerchantProduct) {
+    setEditing(product); setImage(undefined); setFormOpen(true);
+    form.reset({ name: product.name, description: product.description ?? '', basePriceAmount: product.price.amount });
+  }
 
   const availability = useMutation({
     mutationFn: (input: { productId: string; status: 'AVAILABLE' | 'OUT_OF_STOCK' }) =>
@@ -137,7 +167,8 @@ export function CatalogScreen() {
           />
           {formOpen ? (
             <View style={styles.card}>
-              <SectionHeading title={t('catalog.newDish')} />
+              <SectionHeading title={editing ? 'Modifier le plat' : t('catalog.newDish')} />
+              <ImagePickerField label="Photo du plat" currentUrl={editing?.imageUrl} value={image} onChange={setImage} />
               <Controller
                 control={form.control}
                 name="name"
@@ -174,16 +205,20 @@ export function CatalogScreen() {
                   />
                 )}
               />
-              {create.isError ? (
+              {create.isError || saveEdit.isError ? (
                 <AppText color={tokens.color.feedback.error}>
-                  {create.error instanceof ApiError ? create.error.problem.detail : t('errors.generic')}
+                  {create.error instanceof ApiError
+                    ? create.error.problem.detail
+                    : saveEdit.error instanceof ApiError
+                      ? saveEdit.error.problem.detail
+                      : t('errors.generic')}
                 </AppText>
               ) : null}
               <Button
-                label={t('common.create')}
-                loading={create.isPending}
+                label={editing ? t('common.save') : t('common.create')}
+                loading={create.isPending || saveEdit.isPending}
                 disabled={!selectedId}
-                onPress={form.handleSubmit((values) => create.mutate(values))}
+                onPress={form.handleSubmit((values) => editing ? saveEdit.mutate(values) : create.mutate(values))}
               />
             </View>
           ) : null}
@@ -198,6 +233,7 @@ export function CatalogScreen() {
             const available = product.availability === 'AVAILABLE';
             return (
               <View key={product.id} style={styles.card}>
+                {product.imageUrl ? <Image source={{ uri: product.imageUrl }} contentFit="cover" style={styles.productImage} /> : null}
                 <View style={styles.productHead}>
                   <View style={styles.productBody}>
                     <AppText variant="subtitle">{product.name}</AppText>
@@ -231,6 +267,7 @@ export function CatalogScreen() {
                     {available ? t('common.available') : t('common.unavailable')}
                   </AppText>
                 </Pressable>
+                <Button label="Modifier ce plat" variant="outline" onPress={() => openEditor(product)} />
               </View>
             );
           })}
@@ -267,6 +304,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
+  productImage: { width: '100%', height: 170, borderRadius: tokens.radius.card },
   productHead: { flexDirection: 'row', alignItems: 'flex-start', gap: tokens.spacing.sm },
   productBody: { flex: 1, gap: 2 },
   badge: {

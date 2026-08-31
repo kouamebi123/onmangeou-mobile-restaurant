@@ -15,6 +15,10 @@ import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
 import { tokens } from '@/theme';
+import { Image } from 'expo-image';
+import { ImagePickerField } from '@/components/image-picker-field';
+import type { UploadAsset } from '@/api/client';
+import { uploadAvatar } from '@/api/merchant';
 
 export function MoreScreen() {
   const router = useRouter();
@@ -23,6 +27,7 @@ export function MoreScreen() {
   const me = useQuery({ queryKey: ['me'], queryFn: fetchMe });
   const entitlements = useQuery({ queryKey: ['merchant', 'entitlements'], queryFn: () => fetchEntitlements() });
   const [fullName, setFullName] = useState('');
+  const [avatar, setAvatar] = useState<UploadAsset>();
 
   useEffect(() => {
     if (me.data?.fullName) {
@@ -36,7 +41,10 @@ export function MoreScreen() {
   const activeCount = entitlements.data?.enabledModules.length ?? 0;
 
   const saveProfile = useMutation({
-    mutationFn: () => updateMe({ fullName: fullName.trim() }),
+    mutationFn: async () => {
+      await updateMe({ fullName: fullName.trim() });
+      if (avatar) await uploadAvatar(avatar);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
@@ -52,9 +60,7 @@ export function MoreScreen() {
         subtitle={phone === '—' ? t('more.hero') : phone}
       >
         <View style={styles.avatar}>
-          <AppText color={tokens.color.brand.deep} style={styles.avatarLetter}>
-            {initial}
-          </AppText>
+          {me.data?.avatarUrl ? <Image source={{ uri: me.data.avatarUrl }} contentFit="cover" style={styles.avatarImage} /> : <AppText color={tokens.color.brand.deep} style={styles.avatarLetter}>{initial}</AppText>}
         </View>
       </PageHero>
 
@@ -62,6 +68,7 @@ export function MoreScreen() {
         <InfoLine icon="call-outline" label={t('more.phone')} value={phone} />
         <View style={styles.divider} />
         <TextField label={t('more.editProfile')} value={fullName} onChangeText={setFullName} />
+        <ImagePickerField label="Photo de profil" currentUrl={me.data?.avatarUrl} value={avatar} onChange={setAvatar} />
         {saveProfile.isError ? (
           <AppText color={tokens.color.feedback.error}>
             {saveProfile.error instanceof ApiError ? saveProfile.error.problem.detail : t('errors.generic')}
@@ -141,6 +148,7 @@ const styles = StyleSheet.create({
     marginBottom: tokens.spacing.xxs,
   },
   avatarLetter: { fontFamily: tokens.typography.family.bold, fontSize: 22 },
+  avatarImage: { width: 56, height: 56, borderRadius: 28 },
   card: {
     backgroundColor: tokens.color.surface.white,
     borderRadius: tokens.radius.card,

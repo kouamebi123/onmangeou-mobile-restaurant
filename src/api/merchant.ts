@@ -1,4 +1,4 @@
-import { apiRequest } from '@/api/client';
+import { apiRequest, apiUpload, type UploadAsset } from '@/api/client';
 import { createIdempotencyKey } from '@/api/device';
 import type { MoneyView } from '@/api/types';
 
@@ -65,6 +65,7 @@ export interface Establishment {
   hasTerrace?: boolean;
   hasAirConditioning?: boolean;
   accessible?: boolean;
+  coverImageUrl: string | null;
 }
 
 export interface MerchantProduct {
@@ -79,6 +80,7 @@ export interface MerchantProduct {
   vegetarian: boolean;
   halal: boolean;
   spicyLevel: number | null;
+  imageUrl: string | null;
 }
 
 export async function fetchModuleCatalog(): Promise<ModuleCatalog> {
@@ -118,6 +120,26 @@ export async function createProduct(input: {
     body: input,
   });
   return envelope.data;
+}
+
+export async function updateProduct(productId: string, input: { name?: string; description?: string }): Promise<void> {
+  await apiRequest(`/merchant/products/${productId}`, { method: 'PATCH', body: input });
+}
+
+export async function changeProductPrice(productId: string, newAmount: string): Promise<void> {
+  await apiRequest(`/merchant/products/${productId}/price`, { method: 'PATCH', body: { newAmount } });
+}
+
+export async function uploadProductImage(productId: string, image: UploadAsset): Promise<{ url: string }> {
+  return (await apiUpload<{ url: string }>(`/media/products/${productId}/image`, image)).data;
+}
+
+export async function uploadEstablishmentCover(establishmentId: string, image: UploadAsset): Promise<{ url: string }> {
+  return (await apiUpload<{ url: string }>(`/media/establishments/${establishmentId}/cover`, image)).data;
+}
+
+export async function uploadAvatar(image: UploadAsset): Promise<{ url: string }> {
+  return (await apiUpload<{ url: string }>('/media/avatar', image)).data;
 }
 
 export async function setProductAvailability(

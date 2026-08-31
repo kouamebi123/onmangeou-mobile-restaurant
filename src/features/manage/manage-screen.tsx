@@ -57,6 +57,9 @@ import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
 import { tokens } from '@/theme';
+import { ImagePickerField } from '@/components/image-picker-field';
+import type { UploadAsset } from '@/api/client';
+import { uploadEstablishmentCover } from '@/api/merchant';
 
 export function ManageScreen() {
   const queryClient = useQueryClient();
@@ -192,6 +195,7 @@ type PlaceValues = z.infer<typeof placeSchema>;
 
 function EstablishmentEditor({ establishment }: { establishment: Establishment }) {
   const queryClient = useQueryClient();
+  const [cover, setCover] = useState<UploadAsset>();
   const form = useForm<PlaceValues>({
     resolver: zodResolver(placeSchema),
     defaultValues: {
@@ -218,8 +222,8 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
   }, [establishment, form]);
 
   const save = useMutation({
-    mutationFn: (values: PlaceValues) =>
-      updateEstablishment(establishment.id, {
+    mutationFn: async (values: PlaceValues) => {
+      await updateEstablishment(establishment.id, {
         name: values.name,
         description: values.description?.trim() || undefined,
         phone: values.phone?.trim() || undefined,
@@ -227,7 +231,9 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
         district: values.district?.trim() || undefined,
         addressLine: values.addressLine?.trim() || undefined,
         landmarkText: values.landmarkText?.trim() || undefined,
-      }),
+      });
+      if (cover) await uploadEstablishmentCover(establishment.id, cover);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] });
     },
@@ -236,6 +242,7 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
   return (
     <View style={styles.card}>
       <AppText variant="subtitle">{t('manage.editPlace')}</AppText>
+      <ImagePickerField label="Photo principale" currentUrl={establishment.coverImageUrl} value={cover} onChange={setCover} />
       <Controller
         control={form.control}
         name="name"

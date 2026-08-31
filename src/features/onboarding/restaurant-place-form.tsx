@@ -8,6 +8,7 @@ import { AppText } from '@/components/app-text';
 import { PhoneField } from '@/components/phone-field';
 import { Tap } from '@/components/tap';
 import { TextField } from '@/components/text-field';
+import { ImagePickerField } from '@/components/image-picker-field';
 import { MODULE_COPY } from '@/features/plan/module-copy';
 import { quoteModules, WEEK_DAYS, type RestaurantPlaceValues, type WeekDay } from '@/features/onboarding/restaurant-place';
 import { t } from '@/i18n';
@@ -99,6 +100,13 @@ export function RestaurantPlaceForm({
             onChangeText={field.onChange}
             multiline
           />
+        )}
+      />
+      <Controller
+        control={control}
+        name="image"
+        render={({ field }) => (
+          <ImagePickerField label="Photo principale du restaurant" value={field.value} onChange={field.onChange} />
         )}
       />
       <Controller

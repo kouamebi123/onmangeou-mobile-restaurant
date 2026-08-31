@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { UploadAsset } from '@/api/client';
 
 import type { ModuleCatalog } from '@/api/merchant';
 import {
@@ -8,6 +9,7 @@ import {
   saveHours,
   setMerchantModules,
   updateEstablishment,
+  uploadEstablishmentCover,
 } from '@/api/merchant';
 
 export const WEEK_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] as const;
@@ -44,6 +46,7 @@ export const restaurantPlaceFields = z.object({
     SUNDAY: z.boolean(),
   }),
   modules: z.record(z.string(), z.boolean()),
+  image: z.custom<UploadAsset>().optional(),
 });
 
 export const restaurantPlaceSchema = restaurantPlaceFields
@@ -86,6 +89,7 @@ export const EMPTY_RESTAURANT_PLACE: RestaurantPlaceValues = {
     SUNDAY: false,
   },
   modules: {},
+  image: undefined,
 };
 
 export function minutesToClock(totalMinutes: number): string {
@@ -158,6 +162,10 @@ export async function provisionEstablishment(values: RestaurantPlaceValues): Pro
     latitude: coords.latitude,
     longitude: coords.longitude,
   });
+
+  if (values.image) {
+    await uploadEstablishmentCover(created.establishmentId, values.image);
+  }
 
   await updateEstablishment(created.establishmentId, {
     hasTerrace: values.hasTerrace,
