@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 390" width="300" height="390" role="img" aria-labelledby="onmangeou-mono-title" color="#173B36">
+  <title id="onmangeou-mono-title">OnMangeOù - logo officiel monochrome</title>
+  <defs>
+    <mask id="onmangeou-mono-knockout" maskUnits="userSpaceOnUse" x="0" y="0" width="300" height="350">
+      <rect width="300" height="350" fill="white"/>
+      <circle cx="150" cy="140" r="79" fill="none" stroke="black" stroke-width="8"/>
+      <path d="M104 151A52 52 0 0 0 196 151" fill="none" stroke="black" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="187" cy="98" r="13" fill="black"/>
+    </mask>
+  </defs>
+  <g aria-hidden="true" fill="currentColor">
+    <path d="M150 20C220 20 265 70 265 135C265 215 185 275 150 330C115 275 35 215 35 135C35 70 80 20 150 20Z" mask="url(#onmangeou-mono-knockout)"/>
+    <text x="150" y="378" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="31" font-weight="700">OnMangeOù</text>
+  </g>
+</svg>

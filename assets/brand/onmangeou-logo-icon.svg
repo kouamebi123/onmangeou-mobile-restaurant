@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 350" width="300" height="350" role="img" aria-labelledby="onmangeou-icon-title">
+  <title id="onmangeou-icon-title">OnMangeOù - icône officielle</title>
+  <g aria-hidden="true">
+    <path d="M150 20C220 20 265 70 265 135C265 215 185 275 150 330C115 275 35 215 35 135C35 70 80 20 150 20Z" fill="#173B36"/>
+    <circle cx="150" cy="140" r="79" fill="none" stroke="#F7F2E8" stroke-width="8"/>
+    <path d="M104 151A52 52 0 0 0 196 151" fill="none" stroke="#1F6F5F" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="187" cy="98" r="13" fill="#E8783E"/>
+  </g>
+</svg>
