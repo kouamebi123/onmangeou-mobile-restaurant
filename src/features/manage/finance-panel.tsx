@@ -116,7 +116,7 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
       ) : null}
 
       {hasCash ? (
-        <CashCard establishmentId={establishmentId} session={cash.data} onDone={refresh} />
+        <CashCard establishmentId={establishmentId} session={cash.data ?? null} onDone={refresh} />
       ) : null}
       {hasExpenses ? (
         <LedgerCard

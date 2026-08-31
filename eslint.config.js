@@ -1,5 +1,8 @@
 module.exports = [
   {
+    ignores: ['dist/**', '.expo/**', 'node_modules/**'],
+  },
+  {
     files: ['**/*.{js,jsx,ts,tsx}'],
     plugins: {
       '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),

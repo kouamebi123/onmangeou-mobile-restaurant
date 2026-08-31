@@ -52,7 +52,7 @@ export function RestaurantPlaceForm({
     if (changed) {
       setValue('modules', next);
     }
-  }, [catalog.data, setValue]);
+  }, [catalog.data, modules, setValue]);
 
   function toggleModule(code: string, enabled: boolean, locked: boolean) {
     if (locked || !setValue) {
