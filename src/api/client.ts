@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import { createRequestId, getOrCreateInstallId } from '@/api/device';
 import { ApiError, fallbackProblem, isProblemDetails, unwrapEnvelope } from '@/api/envelope';
 import type { ResponseEnvelope, TokenPair } from '@/api/types';
+import { normalizeApiBaseUrl } from '@/api/url';
 import { useAuthStore } from '@/store/auth-store';
 
 const DEFAULT_API_URL = 'http://localhost:3000/api/v1';
@@ -22,13 +23,13 @@ let refreshInFlight: Promise<boolean> | null = null;
 export function getApiBaseUrl(): string {
   const configured = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
   if (Platform.OS === 'web' || !/localhost|127\.0\.0\.1/.test(configured)) {
-    return configured;
+    return normalizeApiBaseUrl(configured);
   }
   const host = Constants.expoConfig?.hostUri?.split(':')[0];
   if (!host || host === 'localhost' || host === '127.0.0.1') {
-    return configured;
+    return normalizeApiBaseUrl(configured);
   }
-  return configured.replace(/localhost|127\.0\.0\.1/, host);
+  return normalizeApiBaseUrl(configured.replace(/localhost|127\.0\.0\.1/, host));
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
