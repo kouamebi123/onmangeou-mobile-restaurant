@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { fetchEntitlements, setMerchantModules } from '@/api/merchant';
@@ -11,6 +11,7 @@ import { Button } from '@/components/button';
 import { ErrorState } from '@/components/error-state';
 import { PageHero } from '@/components/page-hero';
 import { Screen } from '@/components/screen';
+import { Tap } from '@/components/tap';
 import { MODULE_COPY } from '@/features/plan/module-copy';
 import { quoteModules } from '@/features/onboarding/restaurant-place';
 import { t } from '@/i18n';
@@ -91,13 +92,12 @@ export function PlanScreen() {
         const locked = module.code === 'storefront.basic';
         const price = entitlements.data.catalog?.modules.find((entry) => entry.code === module.code)?.monthlyPrice;
         return (
-          <Pressable
+          <Tap
             key={module.code}
             disabled={locked || save.isPending}
+            checked={enabled}
             onPress={() => setDraft((current) => ({ ...current, [module.code]: !enabled }))}
             style={[styles.row, enabled ? styles.rowOn : null]}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: enabled, disabled: locked }}
           >
             <View style={styles.rowBody}>
               <AppText variant="subtitle">{copy?.title ?? module.label}</AppText>
@@ -117,7 +117,7 @@ export function PlanScreen() {
                 color={enabled ? tokens.color.text.onBrand : tokens.color.text.muted}
               />
             </View>
-          </Pressable>
+          </Tap>
         );
       })}
 

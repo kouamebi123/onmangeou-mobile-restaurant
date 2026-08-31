@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Controller, useWatch, type Control, type UseFormSetValue } from 'react-hook-form';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { fetchModuleCatalog, MODULE_CODES } from '@/api/merchant';
 import { AppText } from '@/components/app-text';
 import { PhoneField } from '@/components/phone-field';
+import { Tap } from '@/components/tap';
 import { TextField } from '@/components/text-field';
 import { MODULE_COPY } from '@/features/plan/module-copy';
 import { quoteModules, WEEK_DAYS, type RestaurantPlaceValues, type WeekDay } from '@/features/onboarding/restaurant-place';
@@ -51,7 +52,14 @@ export function RestaurantPlaceForm({
     if (changed) {
       setValue('modules', next);
     }
-  }, [catalog.data, modules, setValue]);
+  }, [catalog.data, setValue]);
+
+  function toggleModule(code: string, enabled: boolean, locked: boolean) {
+    if (locked || !setValue) {
+      return;
+    }
+    setValue('modules', { ...(modules ?? {}), [code]: !enabled });
+  }
 
   return (
     <>
@@ -187,15 +195,16 @@ export function RestaurantPlaceForm({
         render={({ field }) => (
           <View style={styles.row}>
             {WEEK_DAYS.map((day) => (
-              <Pressable
+              <Tap
                 key={day}
+                checked={Boolean(field.value?.[day])}
                 onPress={() => field.onChange({ ...field.value, [day]: !field.value?.[day] })}
                 style={[styles.chip, field.value?.[day] ? styles.chipOn : null]}
               >
                 <AppText color={field.value?.[day] ? tokens.color.brand.primary : tokens.color.text.muted}>
                   {DAY_LABELS[day]}
                 </AppText>
-              </Pressable>
+              </Tap>
             ))}
           </View>
         )}
@@ -214,6 +223,8 @@ export function RestaurantPlaceForm({
       </View>
 
       <AppText variant="subtitle">{t('auth.modules')}</AppText>
+      {catalog.isLoading ? <AppText variant="muted">{t('common.loading')}</AppText> : null}
+      {catalog.isError ? <AppText variant="muted">{t('errors.generic')}</AppText> : null}
       {catalog.data?.notice ? <AppText variant="muted">{catalog.data.notice}</AppText> : null}
       <View style={styles.quote}>
         <AppText variant="caption" color={tokens.color.brand.accent}>
@@ -228,26 +239,21 @@ export function RestaurantPlaceForm({
         const enabled = Boolean(modules?.[item.code]);
         const locked = item.code === MODULE_CODES.STOREFRONT_BASIC;
         return (
-          <Controller
+          <Tap
             key={item.code}
-            control={control}
-            name={`modules.${item.code}` as const}
-            render={({ field }) => (
-              <Pressable
-                disabled={locked}
-                onPress={() => field.onChange(!field.value)}
-                style={[styles.module, enabled ? styles.moduleOn : null]}
-              >
-                <View style={styles.grow}>
-                  <AppText variant="subtitle">{copy?.title ?? item.label}</AppText>
-                  <AppText variant="muted">{copy?.detail ?? item.label}</AppText>
-                  <AppText variant="caption">
-                    {item.included ? t('plan.included') : `${item.monthlyPrice.formatted} / mois`}
-                  </AppText>
-                </View>
-              </Pressable>
-            )}
-          />
+            disabled={locked}
+            checked={enabled}
+            onPress={() => toggleModule(item.code, enabled, locked)}
+            style={[styles.module, enabled ? styles.moduleOn : null]}
+          >
+            <View style={styles.grow}>
+              <AppText variant="subtitle">{copy?.title ?? item.label}</AppText>
+              <AppText variant="muted">{copy?.detail ?? item.label}</AppText>
+              <AppText variant="caption">
+                {item.included ? t('plan.included') : `${item.monthlyPrice.formatted} / mois`}
+              </AppText>
+            </View>
+          </Tap>
         );
       })}
     </>
@@ -271,12 +277,13 @@ function Toggle({
       control={control}
       name={name}
       render={({ field }) => (
-        <Pressable
+        <Tap
+          checked={Boolean(field.value)}
           onPress={() => field.onChange(!field.value)}
           style={[styles.chip, field.value ? styles.chipOn : null]}
         >
           <AppText color={field.value ? tokens.color.brand.primary : tokens.color.text.muted}>{label}</AppText>
-        </Pressable>
+        </Tap>
       )}
     />
   );
