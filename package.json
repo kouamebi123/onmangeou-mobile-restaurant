@@ -12,12 +12,12 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "start": "node ../scripts/run-front.cjs expo start",
-    "android": "node ../scripts/run-front.cjs expo start --android",
-    "ios": "node ../scripts/run-front.cjs expo start --ios",
-    "web": "node ../scripts/run-front.cjs expo start --web --port 8082",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web --port 8082",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -54,8 +54,11 @@
   },
   "devDependencies": {
     "@types/react": "19.2.18",
-    "eslint": "^9.39.5",
-    "eslint-config-expo": "~57.0.2",
+    "@typescript-eslint/eslint-plugin": "8.68.0",
+    "@typescript-eslint/parser": "8.68.0",
+    "eslint": "9.18.0",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
     "typescript": "6.0.3",
     "vitest": "3.2.4"
   }

@@ -17,7 +17,7 @@ export type WeekDay = (typeof WEEK_DAYS)[number];
 const timeSchema = z.string().regex(/^\d{1,2}:\d{2}$/, 'Horaire invalide');
 
 export const restaurantPlaceFields = z.object({
-  fullName: z.string().max(160).optional(),
+  fullName: z.string().min(2).max(160),
   name: z.string().min(2).max(160),
   description: z.string().max(2000).optional(),
   phone: z.string().min(8).max(24),

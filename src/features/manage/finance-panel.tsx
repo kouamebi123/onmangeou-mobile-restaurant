@@ -132,9 +132,9 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
           onSubmit={async (values) => {
             await createExpense(
               establishmentId,
-              digits(values.amount),
-              values.label.trim(),
-              values.category.trim() || undefined,
+              digits(values.amount ?? ''),
+              values.label?.trim() ?? '',
+              values.category?.trim() || undefined,
             );
             refresh();
           }}
@@ -151,7 +151,7 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
           ]}
           submitLabel={t('finance.recordCredit')}
           onSubmit={async (values) => {
-            await createCredit(establishmentId, values.name.trim(), digits(values.amount));
+            await createCredit(establishmentId, values.name?.trim() ?? '', digits(values.amount ?? ''));
             refresh();
           }}
         />
@@ -167,7 +167,7 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
           ]}
           submitLabel={t('finance.recordDebt')}
           onSubmit={async (values) => {
-            await createDebt(establishmentId, values.name.trim(), digits(values.amount));
+            await createDebt(establishmentId, values.name?.trim() ?? '', digits(values.amount ?? ''));
             refresh();
           }}
         />
