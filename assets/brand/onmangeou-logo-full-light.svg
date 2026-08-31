@@ -1,10 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 390" width="300" height="390" role="img" aria-labelledby="onmangeou-full-light-title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 180" width="620" height="180" role="img" aria-labelledby="onmangeou-full-light-title">
   <title id="onmangeou-full-light-title">OnMangeOù - logo complet pour fond clair</title>
   <g aria-hidden="true">
-    <path d="M150 20C220 20 265 70 265 135C265 215 185 275 150 330C115 275 35 215 35 135C35 70 80 20 150 20Z" fill="#173B36"/>
-    <circle cx="150" cy="140" r="79" fill="none" stroke="#F7F2E8" stroke-width="8"/>
-    <path d="M104 151A52 52 0 0 0 196 151" fill="none" stroke="#1F6F5F" stroke-width="12" stroke-linecap="round"/>
-    <circle cx="187" cy="98" r="13" fill="#E8783E"/>
-    <text x="150" y="378" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="31" font-weight="700" fill="#21302D">OnMangeOù</text>
+    <g transform="translate(8 0) scale(.5)">
+      <path d="M150 20C220 20 265 70 265 135C265 215 185 275 150 330C115 275 35 215 35 135C35 70 80 20 150 20Z" fill="#173B36"/>
+      <circle cx="150" cy="140" r="79" fill="none" stroke="#F7F2E8" stroke-width="8"/>
+      <path d="M104 151A52 52 0 0 0 196 151" fill="none" stroke="#1F6F5F" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="187" cy="98" r="13" fill="#E8783E"/>
+    </g>
+    <text x="165" y="111" font-family="Inter, Arial, sans-serif" font-size="58" font-weight="700" fill="#21302D">OnMangeOù</text>
   </g>
 </svg>

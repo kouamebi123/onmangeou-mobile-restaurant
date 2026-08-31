@@ -13,8 +13,8 @@ const sources = {
 } as const;
 
 const WIDTH_RATIO = {
-  light: 200 / 130,
-  dark: 200 / 130,
+  light: 620 / 180,
+  dark: 620 / 180,
   icon: 64 / 80,
 } as const;
 
