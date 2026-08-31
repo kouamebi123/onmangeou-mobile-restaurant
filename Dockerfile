@@ -9,7 +9,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
-ARG EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
+ARG EXPO_PUBLIC_API_URL=https://onmangeou-backend-api-production.up.railway.app/api/v1
 ENV EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
 COPY . .
 RUN pnpm exec expo export --platform web

@@ -7,7 +7,7 @@ import type { ResponseEnvelope, TokenPair } from '@/api/types';
 import { normalizeApiBaseUrl } from '@/api/url';
 import { useAuthStore } from '@/store/auth-store';
 
-const DEFAULT_API_URL = 'http://localhost:3000/api/v1';
+const DEFAULT_API_URL = 'https://onmangeou-backend-api-production.up.railway.app/api/v1';
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
