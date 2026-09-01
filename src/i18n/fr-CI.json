@@ -262,5 +262,22 @@
       "REJECTED": "Refusée",
       "CANCELLED": "Annulée"
     }
+  },
+  "modules": {
+    "storefront.basic": "Vitrine",
+    "catalog.advanced": "Catalogue avancé",
+    "orders.marketplace": "Commandes en ligne",
+    "orders.manual": "Commandes de salle",
+    "reservations.tables": "Réservations",
+    "payments.online": "Paiement en ligne",
+    "cash.register": "Caisse",
+    "finance.expenses": "Dépenses",
+    "finance.credits": "Crédits et dettes",
+    "inventory.simple": "Stock simple",
+    "inventory.ingredients": "Stock par ingrédients",
+    "delivery.internal": "Livraison interne",
+    "marketing.promotions": "Promotions",
+    "analytics.advanced": "Statistiques avancées",
+    "organization.multisite": "Multi-établissements"
   }
 }
