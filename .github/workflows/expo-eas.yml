@@ -1,0 +1,78 @@
+name: Expo EAS
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Verifier la liaison ou lancer un build
+        type: choice
+        options: [verify, build]
+        default: verify
+        required: true
+      platform:
+        description: Plateforme
+        type: choice
+        options: [android, ios, all]
+        default: android
+        required: true
+      profile:
+        description: Profil EAS
+        type: choice
+        options: [preview, production]
+        default: preview
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: expo-eas-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  eas:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CI: "1"
+      EXPO_PUBLIC_API_URL: https://onmangeou-backend-api-production.up.railway.app/api/v1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - name: Verifier la presence du secret
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Ajouter EXPO_TOKEN dans les secrets Actions de ce depot."
+            exit 1
+          fi
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 23.2.0
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Verifier le projet Expo
+        run: |
+          eas whoami
+          eas project:info
+      - name: Lancer et attendre le build EAS
+        if: inputs.operation == 'build'
+        env:
+          BUILD_PLATFORM: ${{ inputs.platform }}
+          BUILD_PROFILE: ${{ inputs.profile }}
+        run: |
+          case "$BUILD_PLATFORM" in android|ios|all) ;; *) exit 1 ;; esac
+          case "$BUILD_PROFILE" in preview|production) ;; *) exit 1 ;; esac
+          eas build --platform "$BUILD_PLATFORM" --profile "$BUILD_PROFILE" --non-interactive --wait

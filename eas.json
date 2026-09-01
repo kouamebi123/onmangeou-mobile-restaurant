@@ -1,16 +1,32 @@
 {
   "cli": {
-    "version": ">= 16.0.0",
+    "version": "23.2.0",
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "node": "24.19.0",
+      "pnpm": "10.20.0",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://onmangeou-backend-api-production.up.railway.app/api/v1"
+      }
+    },
     "development": {
+      "extends": "base",
+      "environment": "development",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "extends": "base",
+      "environment": "preview",
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
     },
-    "production": {}
+    "production": {
+      "extends": "base",
+      "environment": "production",
+      "autoIncrement": true
+    }
   }
 }

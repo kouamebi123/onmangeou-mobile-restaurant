@@ -2,7 +2,11 @@ import type { ExpoConfig } from 'expo/config';
 
 const config: ExpoConfig = {
   name: 'OnMangeOu Restaurant',
-  slug: 'onmangeou-mobile-restaurant',
+  slug: 'onmangeou-restaurant',
+  owner: 'manu99',
+  extra: {
+    eas: { projectId: '88a9ebeb-d938-4fb8-b688-cc09d506f326' },
+  },
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
