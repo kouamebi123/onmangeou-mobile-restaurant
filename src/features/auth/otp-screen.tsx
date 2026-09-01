@@ -111,7 +111,7 @@ export function OtpScreen() {
       <View style={styles.hero}>
         <HeroBlobs />
         <View style={styles.logoWrap}>
-          <Logo variant="dark" height={64} />
+          <Logo variant="dark" height={144} />
         </View>
         <AppText variant="caption" color={tokens.color.brand.accent} style={styles.kicker}>
           {t('auth.kicker')}

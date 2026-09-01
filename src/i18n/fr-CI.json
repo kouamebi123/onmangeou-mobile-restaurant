@@ -1,4 +1,11 @@
 {
+  "onboarding": {
+    "title": "Comment vous appelez-vous ?",
+    "detail": "Votre numéro est vérifié. Ajoutez votre nom pour terminer votre inscription.",
+    "name": "Votre nom",
+    "save": "Continuer",
+    "signOut": "Se déconnecter"
+  },
   "app": {
     "name": "OnMangeOù Restaurant"
   },
