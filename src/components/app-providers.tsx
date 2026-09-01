@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Inter_400Regular,
   Inter_600SemiBold,
@@ -6,10 +6,11 @@ import {
   useFonts,
 } from '@expo-google-fonts/inter';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, StyleSheet, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { BrandIntro } from '@/components/brand-intro';
+import { ProfileOnboarding } from '@/components/profile-onboarding';
 import { kvGet, kvSet } from '@/store/kv-store';
 import { tokens } from '@/theme';
 import { useAuthStore } from '@/store/auth-store';
@@ -32,6 +33,15 @@ interface AppProvidersProps {
 }
 
 export function AppProviders({ children }: AppProvidersProps) {
+  useEffect(() => {
+    const unsubscribe = useAuthStore.subscribe((next, previous) => {
+      if (previous.sessionId && next.sessionId !== previous.sessionId) queryClient.clear();
+    });
+    const appState = AppState.addEventListener('change', (status) => {
+      if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');
+    });
+    return () => { unsubscribe(); appState.remove(); };
+  }, []);
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
@@ -73,7 +83,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <View style={styles.shell}>
-        {children}
+        <ProfileOnboarding>{children}</ProfileOnboarding>
         {intro === 'play' ? <BrandIntro onDone={finishIntro} /> : null}
       </View>
     </QueryClientProvider>

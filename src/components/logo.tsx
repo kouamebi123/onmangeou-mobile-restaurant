@@ -13,12 +13,12 @@ const sources = {
 } as const;
 
 const WIDTH_RATIO = {
-  light: 620 / 180,
-  dark: 620 / 180,
-  icon: 64 / 80,
+  light: 300 / 420,
+  dark: 300 / 420,
+  icon: 300 / 350,
 } as const;
 
-export function Logo({ variant = 'light', height = 48 }: LogoProps) {
+export function Logo({ variant = 'light', height = 120 }: LogoProps) {
   return (
     <Image
       source={sources[variant]}

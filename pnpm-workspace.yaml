@@ -1,0 +1,6 @@
+overrides:
+  ignore@7.0.8: 7.0.7
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild
