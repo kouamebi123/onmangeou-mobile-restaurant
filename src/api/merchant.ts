@@ -276,8 +276,17 @@ export async function createOrganization(input: {
   return envelope.data;
 }
 
+export interface MerchantReservation {
+  id: string; public_ref: string; status: string; customer_name: string; customer_phone: string;
+  party_size: number; starts_at: string; timezone?: string; table_name?: string | null; notes: string | null;
+}
+
+export async function fetchReservationHistory(establishmentId: string, cursor?: string) {
+  return apiRequest<MerchantReservation[]>('/merchant/reservations/history', { query: { establishmentId, cursor } });
+}
+
 export async function fetchMerchantReservations(establishmentId?: string) {
-  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; customer_phone: string; party_size: number; starts_at: string; timezone?: string; table_name?: string | null; notes: string | null }>>(
+  const envelope = await apiRequest<MerchantReservation[]>(
     '/merchant/reservations',
     { query: { establishmentId } },
   );

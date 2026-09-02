@@ -1,4 +1,8 @@
 {
+  "network": {
+    "timeout": "Le serveur met trop de temps à répondre. Vérifiez le suivi avant de relancer une commande.",
+    "offline": "Connexion interrompue. Vérifiez votre accès Internet puis réessayez."
+  },
   "couponManager": {
     "more": "Voir plus de codes",
     "hint": "Partagez un code avec vos clients : la remise s’applique dans leur panier, uniquement pour votre restaurant.",
@@ -139,6 +143,9 @@
     "priceError": "Saisissez un prix en FCFA entier, sans espace ni virgule."
   },
   "imagePicker": {
+    "unreadable": "Impossible de lire cette image. Sélectionnez-la à nouveau.",
+    "denied": "L’accès aux photos est refusé. Autorisez-le dans les réglages de votre téléphone.",
+    "failed": "Impossible d’ouvrir les photos. Réessayez.",
     "empty": "Aucune image",
     "change": "Changer l’image",
     "choose": "Choisir une image",
@@ -351,6 +358,10 @@
     "organization.multisite": "Multi-établissements"
   },
   "reservation": {
+    "active": "À gérer",
+    "history": "Historique",
+    "historyEmpty": "Aucune réservation terminée, annulée ou refusée pour cet établissement.",
+    "loadMore": "Voir les réservations précédentes",
     "loading": "Chargement des réservations…",
     "error": "Impossible de mettre à jour les réservations. Réessayez.",
     "refresh": "Actualiser",

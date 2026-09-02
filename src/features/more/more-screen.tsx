@@ -29,6 +29,13 @@ export function MoreScreen() {
   const entitlements = useQuery({ queryKey: ['merchant', 'entitlements'], queryFn: () => fetchEntitlements() });
   const [fullName, setFullName] = useState('');
   const [avatar, setAvatar] = useState<UploadAsset>();
+  const signOut = useMutation({
+    mutationFn: logout,
+    onSettled: async () => {
+      await clear();
+      router.replace('/');
+    },
+  });
 
   useEffect(() => {
     if (me.data?.fullName) {
@@ -112,14 +119,8 @@ export function MoreScreen() {
       <Button
         label={t('common.signOut')}
         variant="destructive"
-        onPress={async () => {
-          try {
-            await logout();
-          } finally {
-            await clear();
-            router.replace('/');
-          }
-        }}
+        loading={signOut.isPending}
+        onPress={() => signOut.mutate()}
       />
     </Screen>
   );

@@ -243,6 +243,10 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
     },
   });
 
+  const quickAction = useMutation({
+    mutationFn: (action: () => Promise<unknown>) => action(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
+  });
   return (
     <View style={styles.card}>
       <AppText variant="subtitle">{t('manage.editPlace')}</AppText>
@@ -305,32 +309,32 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
       {save.isSuccess ? <AppText color={tokens.color.brand.primary}>{t('manage.saved')}</AppText> : null}
       <Button label={t('common.save')} loading={save.isPending} onPress={form.handleSubmit((values) => save.mutate(values))} />
       <AppText variant="subtitle">{t('manage.amenities')}</AppText>
+      {quickAction.error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>
+        {quickAction.error instanceof ApiError ? quickAction.error.problem.detail : t('errors.generic')}
+      </AppText> : null}
       <View style={styles.row}>
         <AmenityToggle
           label={t('manage.terrace')}
           value={Boolean(establishment.hasTerrace)}
+          disabled={quickAction.isPending}
           onToggle={() =>
-            updateEstablishment(establishment.id, { hasTerrace: !establishment.hasTerrace }).then(() =>
-              queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
-            )
+            quickAction.mutate(() => updateEstablishment(establishment.id, { hasTerrace: !establishment.hasTerrace }))
           }
         />
         <AmenityToggle
           label={t('manage.ac')}
           value={Boolean(establishment.hasAirConditioning)}
+          disabled={quickAction.isPending}
           onToggle={() =>
-            updateEstablishment(establishment.id, { hasAirConditioning: !establishment.hasAirConditioning }).then(() =>
-              queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
-            )
+            quickAction.mutate(() => updateEstablishment(establishment.id, { hasAirConditioning: !establishment.hasAirConditioning }))
           }
         />
         <AmenityToggle
           label={t('manage.accessible')}
           value={Boolean(establishment.accessible)}
+          disabled={quickAction.isPending}
           onToggle={() =>
-            updateEstablishment(establishment.id, { accessible: !establishment.accessible }).then(() =>
-              queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
-            )
+            quickAction.mutate(() => updateEstablishment(establishment.id, { accessible: !establishment.accessible }))
           }
         />
       </View>
@@ -339,11 +343,10 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
       ) : (
         <Button
           label={t('manage.requestVerification')}
+          disabled={quickAction.isPending}
           variant="outline"
           onPress={() =>
-            submitVerification(establishment.id).then(() =>
-              queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
-            )
+            quickAction.mutate(() => submitVerification(establishment.id))
           }
         />
       )}
@@ -352,11 +355,10 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
       ) : (
         <Button
           label={t('manage.publish')}
+          disabled={quickAction.isPending}
           variant="ghost"
           onPress={() =>
-            publishEstablishment(establishment.id).then(() =>
-              queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
-            )
+            quickAction.mutate(() => publishEstablishment(establishment.id))
           }
         />
       )}
@@ -368,16 +370,19 @@ function AmenityToggle({
   label,
   value,
   onToggle,
+  disabled = false,
 }: {
   label: string;
   value: boolean;
   onToggle: () => void;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="switch"
       accessibilityLabel={label}
-      accessibilityState={{ checked: value }}
+      accessibilityState={{ checked: value, disabled }}
+      disabled={disabled}
       onPress={onToggle}
       style={[styles.chip, value ? styles.chipOn : null]}
     >
@@ -528,6 +533,13 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [seats, setSeats] = useState('');
+  const create = useMutation({
+    mutationFn: () => createTable(establishmentId, name.trim(), Number(seats)),
+    onSuccess: async () => {
+      setName(''); setSeats(''); hapticSuccess();
+      await queryClient.invalidateQueries({ queryKey: ['merchant', 'tables'] });
+    },
+  });
   const tables = useQuery({
     queryKey: ['merchant', 'tables', establishmentId],
     queryFn: () => fetchTables(establishmentId),
@@ -539,22 +551,21 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
   return (
     <View style={styles.card}>
       <AppText variant="subtitle">{t('manage.floorPlan')}</AppText>
+      {tables.error ? <ErrorState onRetry={() => void tables.refetch()} /> : null}
       {tables.data?.map((table) => (
         <AppText key={table.id}>
           {table.name} · {table.seats} {t('manage.seats')}
         </AppText>
       ))}
-      <TextField label={t('manage.tableName')} value={name} onChangeText={setName} />
-      <TextField label={t('manage.covers')} keyboardType="number-pad" value={seats} onChangeText={setSeats} />
+      <TextField label={t('manage.tableName')} value={name} onChangeText={setName} editable={!create.isPending} maxLength={80} />
+      <TextField label={t('manage.covers')} keyboardType="number-pad" value={seats} onChangeText={setSeats} editable={!create.isPending} maxLength={3} />
+      {create.error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{create.error instanceof ApiError ? create.error.problem.detail : t('errors.generic')}</AppText> : null}
       <Button
         label={t('manage.addTable')}
         variant="outline"
-        disabled={name.trim().length === 0}
-        onPress={() =>
-          createTable(establishmentId, name.trim(), Number(seats) || 2).then(() => {
-            void queryClient.invalidateQueries({ queryKey: ['merchant', 'tables'] });
-          })
-        }
+        disabled={name.trim().length === 0 || !/^\d{1,3}$/.test(seats) || Number(seats) < 1 || Number(seats) > 100}
+        loading={create.isPending}
+        onPress={() => create.mutate()}
       />
     </View>
   );
