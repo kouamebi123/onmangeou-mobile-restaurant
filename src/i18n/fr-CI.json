@@ -49,6 +49,15 @@
     "generic": "Quelque chose n'a pas fonctionné. Réessayez.",
     "network": "Vérifiez votre connexion puis réessayez."
   },
+  "formErrors": {
+    "fullName": "Saisissez votre nom (2 caractères minimum).",
+    "name": "Saisissez le nom du restaurant (2 caractères minimum).",
+    "phone": "Saisissez un numéro de téléphone valide.",
+    "city": "Saisissez la ville.",
+    "district": "Saisissez le quartier.",
+    "address": "Saisissez l’adresse (3 caractères minimum).",
+    "time": "Horaire au format HH:MM."
+  },
   "comingSoon": {
     "title": "Bientôt",
     "activity": "Les commandes en direct arriveront ici.",
@@ -83,7 +92,8 @@
     "codeLabel": "Code reçu par SMS",
     "sendCode": "Recevoir le code",
     "verify": "Valider le code",
-    "devCode": "Code de test : {code}"
+    "devCode": "Code de test : {code}",
+    "mainPhoto": "Photo principale du restaurant"
   },
   "catalog": {
     "title": "Catalogue",
@@ -96,7 +106,18 @@
     "description": "Description",
     "price": "Prix en FCFA",
     "toggleAvailability": "Rupture / disponibilité",
-    "listTitle": "Au menu"
+    "listTitle": "Au menu",
+    "editDish": "Modifier le plat",
+    "dishPhoto": "Photo du plat",
+    "editThisDish": "Modifier ce plat",
+    "nameError": "Le nom doit contenir entre 2 et 160 caractères.",
+    "priceError": "Saisissez un prix en FCFA entier, sans espace ni virgule."
+  },
+  "imagePicker": {
+    "empty": "Aucune image",
+    "change": "Changer l’image",
+    "choose": "Choisir une image",
+    "hint": "JPEG, PNG ou WebP · 8 Mo maximum"
   },
   "manage": {
     "title": "Gestion",
@@ -127,7 +148,23 @@
     "team": "Équipe",
     "memberName": "Nom de l’employé",
     "memberPhone": "Téléphone",
-    "inviteMember": "Inviter"
+    "inviteMember": "Inviter",
+    "mainPhoto": "Photo principale",
+    "hours": "Horaires",
+    "opensAt": "Ouverture",
+    "closesAt": "Fermeture",
+    "hoursPlaceholder": "HH:MM",
+    "saveHours": "Enregistrer les horaires",
+    "hoursNeedDay": "Choisissez au moins un jour.",
+    "floorPlan": "Plan de salle",
+    "seats": "places",
+    "tableName": "Nom de table",
+    "covers": "Couverts",
+    "addTable": "Ajouter une table",
+    "coupons": "Coupons",
+    "couponCode": "Code",
+    "couponDiscount": "Remise %",
+    "createCoupon": "Créer le coupon"
   },
   "more": {
     "title": "Compte",
@@ -138,7 +175,8 @@
     "editProfile": "Nom affiché",
     "saveProfile": "Enregistrer le profil",
     "editPlan": "Modifier mon forfait",
-    "planDetail": "{count} modules actifs sur votre établissement"
+    "planDetail": "{count} modules actifs sur votre établissement",
+    "profilePhoto": "Photo de profil"
   },
   "plan": {
     "kicker": "Abonnement",
@@ -148,6 +186,7 @@
     "activeCount": "{count} modules retenus",
     "quoteHint": "{count} fonctionnalités · montant recalculé selon votre choix",
     "included": "Inclus dans toutes les offres",
+    "perMonth": "{price} / mois",
     "save": "Enregistrer le forfait",
     "saved": "Forfait mis à jour.",
     "status": {
@@ -248,10 +287,16 @@
     "emptyDetail": "Dès qu’un client commande à emporter, le ticket apparaît ici.",
     "accept": "Accepter",
     "reject": "Refuser",
+    "rejectConfirm": "Confirmer le refus",
     "prepare": "Préparer",
     "ready": "Prêt à retirer",
     "complete": "Remis",
     "notes": "Note",
+    "kitchenQueue": "File cuisine · en cours",
+    "allOrders": "Toutes les commandes",
+    "walkIn": "Ticket comptoir · {name}",
+    "walkInCustomer": "Comptoir",
+    "noProduct": "Aucun plat disponible",
     "status": {
       "PENDING_PAYMENT": "Paiement en attente",
       "PENDING_RESTAURANT": "En attente",

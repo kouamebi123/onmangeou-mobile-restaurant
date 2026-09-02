@@ -25,8 +25,9 @@ export function Tap({
       accessibilityRole="button"
       accessibilityState={{ disabled, checked }}
       onPress={disabled ? undefined : onPress}
-      style={[
+      style={({ pressed }) => [
         style,
+        pressed && !disabled ? { opacity: 0.7 } : null,
         Platform.OS === 'web'
           ? ({ cursor: disabled ? 'not-allowed' : 'pointer', userSelect: 'none' } as ViewStyle)
           : null,

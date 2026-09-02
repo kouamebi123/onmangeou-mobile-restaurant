@@ -29,6 +29,7 @@ import { SectionHeading } from '@/components/section-heading';
 import { Skeleton } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
 import { ImagePickerField } from '@/components/image-picker-field';
+import { hapticLight, hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
 import { useMerchantStore } from '@/store/merchant-store';
 import { tokens } from '@/theme';
@@ -84,6 +85,7 @@ export function CatalogScreen() {
       if (image) await uploadProductImage(result.productId, image);
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'products', selectedId] });
       form.reset();
       setImage(undefined);
@@ -99,6 +101,7 @@ export function CatalogScreen() {
       if (image) await uploadProductImage(editing.id, image);
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'products', selectedId] });
       setEditing(undefined); setImage(undefined); setFormOpen(false); form.reset();
     },
@@ -113,6 +116,7 @@ export function CatalogScreen() {
     mutationFn: (input: { productId: string; status: 'AVAILABLE' | 'OUT_OF_STOCK' }) =>
       setProductAvailability(input.productId, input.status),
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'products', selectedId] });
     },
   });
@@ -167,8 +171,8 @@ export function CatalogScreen() {
           />
           {formOpen ? (
             <View style={styles.card}>
-              <SectionHeading title={editing ? 'Modifier le plat' : t('catalog.newDish')} />
-              <ImagePickerField label="Photo du plat" currentUrl={editing?.imageUrl} value={image} onChange={setImage} />
+              <SectionHeading title={editing ? t('catalog.editDish') : t('catalog.newDish')} />
+              <ImagePickerField label={t('catalog.dishPhoto')} currentUrl={editing?.imageUrl} value={image} onChange={setImage} />
               <Controller
                 control={form.control}
                 name="name"
@@ -177,7 +181,7 @@ export function CatalogScreen() {
                     label={t('catalog.name')}
                     value={field.value}
                     onChangeText={field.onChange}
-                    error={fieldState.error ? t('errors.generic') : undefined}
+                    error={fieldState.error ? t('catalog.nameError') : undefined}
                   />
                 )}
               />
@@ -201,7 +205,7 @@ export function CatalogScreen() {
                     keyboardType="number-pad"
                     value={field.value}
                     onChangeText={field.onChange}
-                    error={fieldState.error ? t('errors.generic') : undefined}
+                    error={fieldState.error ? t('catalog.priceError') : undefined}
                   />
                 )}
               />
@@ -233,7 +237,14 @@ export function CatalogScreen() {
             const available = product.availability === 'AVAILABLE';
             return (
               <View key={product.id} style={styles.card}>
-                {product.imageUrl ? <Image source={{ uri: product.imageUrl }} contentFit="cover" style={styles.productImage} /> : null}
+                {product.imageUrl ? (
+                  <Image
+                    source={{ uri: product.imageUrl }}
+                    contentFit="cover"
+                    style={styles.productImage}
+                    accessibilityLabel={product.name}
+                  />
+                ) : null}
                 <View style={styles.productHead}>
                   <View style={styles.productBody}>
                     <AppText variant="subtitle">{product.name}</AppText>
@@ -252,12 +263,13 @@ export function CatalogScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={t('catalog.toggleAvailability')}
                   disabled={availability.isPending}
-                  onPress={() =>
+                  onPress={() => {
+                    hapticLight();
                     availability.mutate({
                       productId: product.id,
                       status: available ? 'OUT_OF_STOCK' : 'AVAILABLE',
-                    })
-                  }
+                    });
+                  }}
                   style={[styles.toggle, available ? styles.toggleOn : styles.toggleOff]}
                 >
                   <AppText
@@ -267,7 +279,7 @@ export function CatalogScreen() {
                     {available ? t('common.available') : t('common.unavailable')}
                   </AppText>
                 </Pressable>
-                <Button label="Modifier ce plat" variant="outline" onPress={() => openEditor(product)} />
+                <Button label={t('catalog.editThisDish')} variant="outline" onPress={() => openEditor(product)} />
               </View>
             );
           })}

@@ -49,7 +49,9 @@ import { ErrorState } from '@/components/error-state';
 import { PageHero } from '@/components/page-hero';
 import { Screen } from '@/components/screen';
 import { SectionHeading } from '@/components/section-heading';
+import { Skeleton } from '@/components/skeleton';
 import { TextField } from '@/components/text-field';
+import { hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
 import { tokens } from '@/theme';
@@ -106,7 +108,12 @@ export function ManageScreen() {
       />
       {me.isError ? <ErrorState onRetry={() => void me.refetch()} /> : null}
 
-      {!hasMembership ? (
+      {me.isLoading ? (
+        <>
+          <Skeleton height={120} />
+          <Skeleton height={220} />
+        </>
+      ) : !hasMembership ? (
         <>
           <EmptyState title={t('empty.organization')} detail={t('empty.organizationDetail')} />
           <CreateRestaurantCard form={form} creating={create} />
@@ -231,6 +238,7 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
       if (cover) await uploadEstablishmentCover(establishment.id, cover);
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] });
     },
   });
@@ -238,7 +246,7 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
   return (
     <View style={styles.card}>
       <AppText variant="subtitle">{t('manage.editPlace')}</AppText>
-      <ImagePickerField label="Photo principale" currentUrl={establishment.coverImageUrl} value={cover} onChange={setCover} />
+      <ImagePickerField label={t('manage.mainPhoto')} currentUrl={establishment.coverImageUrl} value={cover} onChange={setCover} />
       <Controller
         control={form.control}
         name="name"
@@ -366,7 +374,13 @@ function AmenityToggle({
   onToggle: () => void;
 }) {
   return (
-    <Pressable onPress={onToggle} style={[styles.chip, value ? styles.chipOn : null]}>
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: value }}
+      onPress={onToggle}
+      style={[styles.chip, value ? styles.chipOn : null]}
+    >
       <AppText color={value ? tokens.color.brand.primary : tokens.color.text.muted}>{label}</AppText>
     </Pressable>
   );
@@ -481,7 +495,7 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
     mutationFn: () => {
       const selected = WEEK_DAYS.filter((weekDay) => weekDays[weekDay]);
       if (selected.length === 0) {
-        throw new Error('Choisissez au moins un jour.');
+        throw new Error(t('manage.hoursNeedDay'));
       }
       let opensAtMinutes = parseClockMinutes(opensAt);
       let closesAtMinutes = parseClockMinutes(closesAt);
@@ -494,25 +508,29 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
       );
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'hours'] });
     },
   });
 
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">Horaires</AppText>
+      <AppText variant="subtitle">{t('manage.hours')}</AppText>
       <View style={styles.row}>
         <View style={styles.grow}>
-          <TextField label="Ouverture" value={opensAt} onChangeText={setOpensAt} placeholder="HH:MM" />
+          <TextField label={t('manage.opensAt')} value={opensAt} onChangeText={setOpensAt} placeholder={t('manage.hoursPlaceholder')} />
         </View>
         <View style={styles.grow}>
-          <TextField label="Fermeture" value={closesAt} onChangeText={setClosesAt} placeholder="HH:MM" />
+          <TextField label={t('manage.closesAt')} value={closesAt} onChangeText={setClosesAt} placeholder={t('manage.hoursPlaceholder')} />
         </View>
       </View>
       <View style={styles.row}>
         {WEEK_DAYS.map((weekDay) => (
           <Pressable
             key={weekDay}
+            accessibilityRole="button"
+            accessibilityLabel={HOUR_DAY_LABELS[weekDay]}
+            accessibilityState={{ selected: weekDays[weekDay] }}
             onPress={() => setWeekDays((current) => ({ ...current, [weekDay]: !current[weekDay] }))}
             style={[styles.chip, weekDays[weekDay] ? styles.chipOn : null]}
           >
@@ -523,9 +541,9 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
         ))}
       </View>
       {save.error ? (
-        <AppText variant="muted">{save.error instanceof Error ? save.error.message : t('errors.generic')}</AppText>
+        <AppText color={tokens.color.feedback.error}>{save.error instanceof Error ? save.error.message : t('errors.generic')}</AppText>
       ) : null}
-      <Button label="Enregistrer les horaires" variant="outline" loading={save.isPending} onPress={() => save.mutate()} />
+      <Button label={t('manage.saveHours')} variant="outline" loading={save.isPending} onPress={() => save.mutate()} />
     </View>
   );
 }
@@ -546,16 +564,16 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
   }
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">Plan de salle</AppText>
+      <AppText variant="subtitle">{t('manage.floorPlan')}</AppText>
       {tables.data?.map((table) => (
         <AppText key={table.id}>
-          {table.name} · {table.seats} places
+          {table.name} · {table.seats} {t('manage.seats')}
         </AppText>
       ))}
-      <TextField label="Nom de table" value={name} onChangeText={setName} />
-      <TextField label="Couverts" keyboardType="number-pad" value={seats} onChangeText={setSeats} />
+      <TextField label={t('manage.tableName')} value={name} onChangeText={setName} />
+      <TextField label={t('manage.covers')} keyboardType="number-pad" value={seats} onChangeText={setSeats} />
       <Button
-        label="Ajouter une table"
+        label={t('manage.addTable')}
         variant="outline"
         disabled={name.trim().length === 0}
         onPress={() =>
@@ -602,6 +620,9 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
         {(['KITCHEN', 'CASHIER', 'WAITER'] as const).map((code) => (
           <Pressable
             key={code}
+            accessibilityRole="button"
+            accessibilityLabel={code}
+            accessibilityState={{ selected: role === code }}
             onPress={() => setRole(code)}
             style={[styles.chip, role === code ? styles.chipOn : null]}
           >
@@ -637,16 +658,16 @@ function CouponsPanel({ establishmentId }: { establishmentId: string }) {
   }
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">Coupons</AppText>
+      <AppText variant="subtitle">{t('manage.coupons')}</AppText>
       {coupons.data?.map((item) => (
         <AppText key={item.id}>
           {item.code} · −{Math.round(item.discount_bps / 100)} %
         </AppText>
       ))}
-      <TextField label="Code" value={code} onChangeText={setCode} />
-      <TextField label="Remise %" keyboardType="number-pad" value={percent} onChangeText={setPercent} />
+      <TextField label={t('manage.couponCode')} value={code} onChangeText={setCode} />
+      <TextField label={t('manage.couponDiscount')} keyboardType="number-pad" value={percent} onChangeText={setPercent} />
       <Button
-        label="Créer le coupon"
+        label={t('manage.createCoupon')}
         variant="outline"
         disabled={code.trim().length < 3 || Number.parseInt(percent, 10) <= 0}
         onPress={() => {
@@ -680,7 +701,7 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: tokens.spacing.sm, flexWrap: 'wrap' },
   chip: {
-    minHeight: 36,
+    minHeight: tokens.layout.minTouchTarget,
     paddingHorizontal: tokens.spacing.sm,
     borderRadius: tokens.radius.pill,
     borderWidth: 1,

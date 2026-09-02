@@ -53,6 +53,7 @@ export function ActivityScreen() {
   const openTickets = (orders.data ?? []).filter((order) =>
     ['PENDING_RESTAURANT', 'ACCEPTED', 'PREPARING', 'READY'].includes(order.status),
   ).length;
+  const metricsLoading = products.isLoading || orders.isLoading;
   const location = selected ? [selected.district, selected.city].filter(Boolean).join(' · ') : t('activity.subtitle');
 
   return (
@@ -100,9 +101,9 @@ export function ActivityScreen() {
 
       {list.length > 0 ? (
         <View style={styles.metrics}>
-          <Metric value={String(openTickets)} label={t('activity.tickets')} />
-          <Metric value={String(productList.length)} label={t('activity.products')} />
-          <Metric value={String(unavailable)} label={t('activity.unavailable')} />
+          <Metric value={metricsLoading ? '—' : String(openTickets)} label={t('activity.tickets')} />
+          <Metric value={metricsLoading ? '—' : String(productList.length)} label={t('activity.products')} />
+          <Metric value={metricsLoading ? '—' : String(unavailable)} label={t('activity.unavailable')} />
         </View>
       ) : null}
 
@@ -115,7 +116,7 @@ export function ActivityScreen() {
             {t('activity.ordersTitle')}
           </AppText>
           <AppText variant="subtitle" style={styles.center}>
-            {openTickets > 0 ? String(openTickets) : t('orders.empty')}
+            {metricsLoading ? t('common.loading') : openTickets > 0 ? String(openTickets) : t('orders.empty')}
           </AppText>
           <AppText variant="muted" style={styles.center}>
             {t('activity.ordersDetail')}

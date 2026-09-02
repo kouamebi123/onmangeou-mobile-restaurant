@@ -68,7 +68,7 @@ export function MoreScreen() {
         <InfoLine icon="call-outline" label={t('more.phone')} value={phone} />
         <View style={styles.divider} />
         <TextField label={t('more.editProfile')} value={fullName} onChangeText={setFullName} />
-        <ImagePickerField label="Photo de profil" currentUrl={me.data?.avatarUrl} value={avatar} onChange={setAvatar} />
+        <ImagePickerField label={t('more.profilePhoto')} currentUrl={me.data?.avatarUrl} value={avatar} onChange={setAvatar} />
         {saveProfile.isError ? (
           <AppText color={tokens.color.feedback.error}>
             {saveProfile.error instanceof ApiError ? saveProfile.error.problem.detail : t('errors.generic')}

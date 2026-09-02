@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
@@ -11,6 +11,7 @@ import {
   type MerchantOrderStatus,
 } from '@/api/merchant';
 import { ApiError } from '@/api/envelope';
+import { hapticSuccess, hapticWarning } from '@/feedback/haptics';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
@@ -61,6 +62,7 @@ export function OrdersScreen() {
     mutationFn: (input: { orderId: string; status: Exclude<MerchantOrderStatus, 'PENDING_PAYMENT' | 'PENDING_RESTAURANT' | 'CANCELLED'> }) =>
       changeMerchantOrderStatus(input.orderId, input.status),
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'orders'] });
     },
   });
@@ -69,16 +71,17 @@ export function OrdersScreen() {
     mutationFn: () => {
       const product = products.data?.[0];
       if (!selectedId || !product) {
-        throw new Error('Aucun plat');
+        throw new Error(t('orders.noProduct'));
       }
       return createManualOrder({
         establishmentId: selectedId,
-        customerName: 'Comptoir',
+        customerName: t('orders.walkInCustomer'),
         items: [{ productId: product.id, quantity: 1 }],
         service: 'DINE_IN',
       });
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['merchant', 'orders'] });
     },
   });
@@ -86,14 +89,19 @@ export function OrdersScreen() {
   return (
     <Screen>
       <PageHero icon="receipt-outline" kicker={t('app.name')} title={t('tabs.orders')} subtitle={t('orders.hero')} />
-      <Pressable onPress={() => setKitchenOnly((value) => !value)} style={styles.filter}>
+      <Pressable
+        accessibilityRole="switch"
+        accessibilityState={{ checked: kitchenOnly }}
+        onPress={() => setKitchenOnly((value) => !value)}
+        style={styles.filter}
+      >
         <AppText color={kitchenOnly ? tokens.color.brand.primary : tokens.color.text.muted}>
-          {kitchenOnly ? 'File cuisine · en cours' : 'Toutes les commandes'}
+          {kitchenOnly ? t('orders.kitchenQueue') : t('orders.allOrders')}
         </AppText>
       </Pressable>
       {selectedId && products.data?.[0] ? (
         <Button
-          label={`Ticket comptoir · ${products.data[0].name}`}
+          label={t('orders.walkIn', { name: products.data[0].name })}
           variant="outline"
           loading={walkIn.isPending}
           onPress={() => walkIn.mutate()}
@@ -134,6 +142,27 @@ function TicketCard({
   onAction: (status: Exclude<MerchantOrderStatus, 'PENDING_PAYMENT' | 'PENDING_RESTAURANT' | 'CANCELLED'>) => void;
 }) {
   const actions = NEXT_ACTIONS[order.status].filter((action) => order.service !== 'DELIVERY' || action.status !== 'COMPLETED');
+  const [confirmingReject, setConfirmingReject] = useState(false);
+  const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (confirmTimer.current) {
+      clearTimeout(confirmTimer.current);
+    }
+  }, []);
+
+  const handleAction = (status: Exclude<MerchantOrderStatus, 'PENDING_PAYMENT' | 'PENDING_RESTAURANT' | 'CANCELLED'>) => {
+    if (status === 'REJECTED' && !confirmingReject) {
+      hapticWarning();
+      setConfirmingReject(true);
+      confirmTimer.current = setTimeout(() => setConfirmingReject(false), 4000);
+      return;
+    }
+    if (confirmTimer.current) {
+      clearTimeout(confirmTimer.current);
+    }
+    setConfirmingReject(false);
+    onAction(status);
+  };
 
   return (
     <View style={styles.card}>
@@ -167,10 +196,10 @@ function TicketCard({
           {actions.map((action) => (
             <Button
               key={action.status}
-              label={t(action.label)}
+              label={action.status === 'REJECTED' && confirmingReject ? t('orders.rejectConfirm') : t(action.label)}
               variant={action.variant ?? 'primary'}
               loading={busy}
-              onPress={() => onAction(action.status)}
+              onPress={() => handleAction(action.status)}
               style={styles.action}
             />
           ))}
@@ -204,7 +233,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: tokens.spacing.sm },
   action: { flex: 1 },
   filter: {
-    minHeight: 40,
+    minHeight: tokens.layout.minTouchTarget,
     justifyContent: 'center',
     paddingHorizontal: tokens.spacing.sm,
   },

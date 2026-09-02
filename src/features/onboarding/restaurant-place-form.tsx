@@ -73,7 +73,7 @@ export function RestaurantPlaceForm({
               label={t('auth.fullName')}
               value={field.value ?? ''}
               onChangeText={field.onChange}
-              error={fieldState.error ? t('errors.generic') : undefined}
+              error={fieldState.error ? t('formErrors.fullName') : undefined}
             />
           )}
         />
@@ -86,7 +86,7 @@ export function RestaurantPlaceForm({
             label={t('auth.organizationName')}
             value={field.value}
             onChangeText={field.onChange}
-            error={fieldState.error ? t('errors.generic') : undefined}
+            error={fieldState.error ? t('formErrors.name') : undefined}
           />
         )}
       />
@@ -106,7 +106,7 @@ export function RestaurantPlaceForm({
         control={control}
         name="image"
         render={({ field }) => (
-          <ImagePickerField label="Photo principale du restaurant" value={field.value} onChange={field.onChange} />
+          <ImagePickerField label={t('auth.mainPhoto')} value={field.value} onChange={field.onChange} />
         )}
       />
       <Controller
@@ -116,7 +116,7 @@ export function RestaurantPlaceForm({
           <PhoneField
             value={field.value}
             onChangeText={field.onChange}
-            error={fieldState.error ? t('errors.generic') : undefined}
+            error={fieldState.error ? t('formErrors.phone') : undefined}
           />
         )}
       />
@@ -128,7 +128,7 @@ export function RestaurantPlaceForm({
             label={t('manage.city')}
             value={field.value}
             onChangeText={field.onChange}
-            error={fieldState.error ? t('errors.generic') : undefined}
+            error={fieldState.error ? t('formErrors.city') : undefined}
           />
         )}
       />
@@ -140,7 +140,7 @@ export function RestaurantPlaceForm({
             label={t('manage.district')}
             value={field.value}
             onChangeText={field.onChange}
-            error={fieldState.error ? t('errors.generic') : undefined}
+            error={fieldState.error ? t('formErrors.district') : undefined}
           />
         )}
       />
@@ -152,7 +152,7 @@ export function RestaurantPlaceForm({
             label={t('manage.address')}
             value={field.value}
             onChangeText={field.onChange}
-            error={fieldState.error ? t('errors.generic') : undefined}
+            error={fieldState.error ? t('formErrors.address') : undefined}
           />
         )}
       />
@@ -175,8 +175,8 @@ export function RestaurantPlaceForm({
                 label={t('auth.opensAt')}
                 value={field.value}
                 onChangeText={field.onChange}
-                placeholder="HH:MM"
-                error={fieldState.error ? t('errors.generic') : undefined}
+                placeholder={t('manage.hoursPlaceholder')}
+                error={fieldState.error ? t('formErrors.time') : undefined}
               />
             )}
           />
@@ -190,8 +190,8 @@ export function RestaurantPlaceForm({
                 label={t('auth.closesAt')}
                 value={field.value}
                 onChangeText={field.onChange}
-                placeholder="HH:MM"
-                error={fieldState.error ? t('errors.generic') : undefined}
+                placeholder={t('manage.hoursPlaceholder')}
+                error={fieldState.error ? t('formErrors.time') : undefined}
               />
             )}
           />
@@ -258,7 +258,7 @@ export function RestaurantPlaceForm({
               <AppText variant="subtitle">{copy?.title ?? item.label}</AppText>
               <AppText variant="muted">{copy?.detail ?? item.label}</AppText>
               <AppText variant="caption">
-                {item.included ? t('plan.included') : `${item.monthlyPrice.formatted} / mois`}
+                {item.included ? t('plan.included') : t('plan.perMonth', { price: item.monthlyPrice.formatted })}
               </AppText>
             </View>
           </Tap>
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.sm },
   grow: { flex: 1, minWidth: 120, gap: 4 },
   chip: {
-    minHeight: 36,
+    minHeight: tokens.layout.minTouchTarget,
     paddingHorizontal: tokens.spacing.sm,
     borderRadius: tokens.radius.pill,
     borderWidth: 1,

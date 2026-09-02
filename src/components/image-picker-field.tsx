@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import type { UploadAsset } from '@/api/client';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { t } from '@/i18n';
 import { tokens } from '@/theme';
 
 export function ImagePickerField({ label, value, currentUrl, onChange }: {
@@ -26,12 +27,16 @@ export function ImagePickerField({ label, value, currentUrl, onChange }: {
   return (
     <View style={styles.wrap}>
       <AppText variant="subtitle">{label}</AppText>
-      {source ? <Image source={{ uri: source }} contentFit="cover" style={styles.preview} /> : <View style={styles.empty}><AppText variant="muted">Aucune image</AppText></View>}
+      {source ? (
+        <Image source={{ uri: source }} contentFit="cover" style={styles.preview} accessibilityLabel={label} />
+      ) : (
+        <View style={styles.empty}><AppText variant="muted">{t('imagePicker.empty')}</AppText></View>
+      )}
       <View style={styles.actions}>
-        <Button label={source ? "Changer l’image" : 'Choisir une image'} variant="outline" onPress={() => void choose()} />
-        {value ? <Button label="Annuler" variant="ghost" onPress={() => onChange(undefined)} /> : null}
+        <Button label={source ? t('imagePicker.change') : t('imagePicker.choose')} variant="outline" onPress={() => void choose()} />
+        {value ? <Button label={t('common.cancel')} variant="ghost" onPress={() => onChange(undefined)} /> : null}
       </View>
-      <AppText variant="caption">JPEG, PNG ou WebP · 8 Mo maximum</AppText>
+      <AppText variant="caption">{t('imagePicker.hint')}</AppText>
     </View>
   );
 }

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { UploadAsset } from '@/api/client';
 
 import type { ModuleCatalog } from '@/api/merchant';
+import { t } from '@/i18n';
 import {
   MODULE_CODES,
   createEstablishment,
@@ -146,7 +147,7 @@ export function quoteModules(catalog: ModuleCatalog | undefined, enabled: readon
     }
     return sum + Number(item.monthlyPrice.amount);
   }, 0);
-  return `${new Intl.NumberFormat('fr-CI').format(total)}\u202fFCFA / mois`;
+  return t('plan.perMonth', { price: `${new Intl.NumberFormat('fr-CI').format(total)}\u202fFCFA` });
 }
 
 export async function provisionEstablishment(values: RestaurantPlaceValues): Promise<{ establishmentId: string }> {
