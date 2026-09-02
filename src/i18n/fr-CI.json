@@ -382,5 +382,41 @@
     "notice": "Horaires du restaurant ({timezone}). Heure souhaitée, à confirmer par le restaurant ; le délai de livraison peut varier.",
     "requested": "Prévue le {date}",
     "immediate": "Dès que possible"
+  },
+  "ledger": {
+    "title": "Règlements et soldes",
+    "hint": "Enregistrez les sommes réellement reçues ou versées. Aucun transfert d’argent n’est effectué par l’application.",
+    "refresh": "Actualiser",
+    "empty": "Aucune écriture pour le moment.",
+    "more": "Afficher la suite",
+    "remaining": "Solde restant : {amount}",
+    "paid": "Réglé : {paid} sur {total}",
+    "settled": "Soldé",
+    "close": "Fermer",
+    "manage": "Voir les règlements",
+    "reference": "Référence ou motif du règlement",
+    "record": "Enregistrer un règlement",
+    "confirm": "Confirmer l’enregistrement de {amount} FCFA ? Cette écriture sera conservée dans l’historique.",
+    "confirmAction": "Confirmer le règlement",
+    "saved": "Règlement enregistré.",
+    "history": "Historique des règlements",
+    "noHistory": "Aucun règlement enregistré."
+  },
+  "eventManager": {
+    "title": "Vos événements",
+    "hint": "Programmez vos rendez-vous, modifiez les événements à venir et annulez ceux qui ne peuvent plus avoir lieu.",
+    "new": "Créer un événement",
+    "edit": "Modifier l’événement",
+    "cancel": "Annuler l’événement",
+    "cancelled": "Événement annulé",
+    "confirmCancel": "Annuler cet événement et le retirer de la vitrine ?",
+    "empty": "Aucun événement.",
+    "description": "Description",
+    "day": "Jour",
+    "time": "Heure locale du restaurant",
+    "duration": "Durée",
+    "minutes": "{value} min",
+    "invalid": "Indiquez un titre d’au moins trois caractères et une date future.",
+    "save": "Enregistrer l’événement"
   }
 }

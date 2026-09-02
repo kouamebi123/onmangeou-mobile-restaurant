@@ -1,3 +1,4 @@
+import { LedgerPanel } from './ledger-panel';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -173,6 +174,7 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
           }}
         />
       ) : null}
+      {hasCredits ? <LedgerPanel establishmentId={establishmentId} /> : null}
       {hasStock ? (
         <StockCard establishmentId={establishmentId} items={inventory.data ?? []} onDone={refresh} />
       ) : null}

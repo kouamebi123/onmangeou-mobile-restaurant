@@ -1,5 +1,6 @@
 import { DeliveryPanel, ReviewPanel } from './service-panels';
 import { ReservationPanel } from './reservation-panel';
+import { EventsPanel } from './events-panel';
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -11,7 +12,6 @@ import { useEffect, useState } from 'react';
 import { fetchMe, refreshTokens } from '@/api/auth';
 import {
   createCoupon,
-  createEvent,
   createOrganization,
   createTable,
   fetchCoupons,
@@ -387,8 +387,6 @@ function AmenityToggle({
 }
 
 function ServicePanel({ establishmentId }: { establishmentId: string }) {
-  const queryClient = useQueryClient();
-  const [eventTitle, setEventTitle] = useState('');
   const entitlements = useQuery({
     queryKey: ['merchant', 'entitlements'],
     queryFn: () => fetchEntitlements(),
@@ -400,9 +398,6 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const hasReviews = hasModule(enabled, MODULE_CODES.STOREFRONT_BASIC);
   const hasMarketing = hasModule(enabled, MODULE_CODES.MARKETING_PROMOTIONS);
 
-  const refresh = () => {
-    void queryClient.invalidateQueries({ queryKey: ['merchant'] });
-  };
 
   if (!ready || (!hasReservations && !hasDelivery && !hasReviews && !hasMarketing)) {
     return null;
@@ -416,24 +411,7 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
       {hasReviews || hasMarketing ? (
         <View style={styles.card}>
           {hasReviews ? <ReviewPanel establishmentId={establishmentId} /> : null}
-          {hasMarketing ? (
-            <>
-              <TextField label={t('service.eventTitle')} value={eventTitle} onChangeText={setEventTitle} />
-              <Button
-                label={t('service.publishEvent')}
-                variant="ghost"
-                disabled={eventTitle.trim().length < 3}
-                onPress={() =>
-                  createEvent(establishmentId, eventTitle.trim(), new Date(Date.now() + 3600_000).toISOString()).then(
-                    () => {
-                      setEventTitle('');
-                      refresh();
-                    },
-                  )
-                }
-              />
-            </>
-          ) : null}
+          {hasMarketing ? <EventsPanel establishmentId={establishmentId} /> : null}
         </View>
       ) : null}
     </>
