@@ -279,5 +279,26 @@
     "marketing.promotions": "Promotions",
     "analytics.advanced": "Statistiques avancées",
     "organization.multisite": "Multi-établissements"
+  },
+  "reservation": {
+    "loading": "Chargement des réservations…",
+    "error": "Impossible de mettre à jour les réservations. Réessayez.",
+    "refresh": "Actualiser",
+    "people": "personne(s)",
+    "REQUESTED": "En attente",
+    "CONFIRMED": "Confirmée",
+    "REJECTED": "Refusée",
+    "CANCELLED": "Annulée",
+    "SEATED": "Installé à table",
+    "COMPLETED": "Terminée",
+    "NO_SHOW": "Absent",
+    "action": {
+      "CONFIRMED": "Confirmer",
+      "REJECTED": "Refuser",
+      "CANCELLED": "Annuler",
+      "SEATED": "Client installé",
+      "COMPLETED": "Terminer",
+      "NO_SHOW": "Signaler une absence"
+    }
   }
 }

@@ -272,7 +272,7 @@ export async function createOrganization(input: {
 }
 
 export async function fetchMerchantReservations(establishmentId?: string) {
-  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; party_size: number }>>(
+  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; customer_phone: string; party_size: number; starts_at: string; timezone?: string; notes: string | null }>>(
     '/merchant/reservations',
     { query: { establishmentId } },
   );

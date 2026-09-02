@@ -1,3 +1,4 @@
+import { ReservationPanel } from './reservation-panel';
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -9,7 +10,6 @@ import { useEffect, useState } from 'react';
 import { fetchMe, refreshTokens } from '@/api/auth';
 import {
   changeDeliveryStatus,
-  changeReservationStatus,
   createCoupon,
   createEvent,
   createOrganization,
@@ -20,7 +20,6 @@ import {
   fetchEstablishments,
   fetchHours,
   fetchMembers,
-  fetchMerchantReservations,
   fetchMerchantReviews,
   fetchTables,
   hasModule,
@@ -391,11 +390,6 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const hasReviews = hasModule(enabled, MODULE_CODES.STOREFRONT_BASIC);
   const hasMarketing = hasModule(enabled, MODULE_CODES.MARKETING_PROMOTIONS);
 
-  const reservations = useQuery({
-    queryKey: ['merchant', 'reservations', establishmentId],
-    queryFn: () => fetchMerchantReservations(establishmentId),
-    enabled: ready && hasReservations,
-  });
   const deliveries = useQuery({
     queryKey: ['merchant', 'deliveries', establishmentId],
     queryFn: () => fetchDeliveries(establishmentId),
@@ -417,29 +411,7 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   return (
     <>
       <SectionHeading title={t('service.title')} />
-      {hasReservations ? (
-        <View style={styles.card}>
-          <AppText variant="subtitle">{t('service.reservations')}</AppText>
-          {reservations.data?.length ? (
-            reservations.data.map((item) => (
-              <View key={item.id} style={styles.row}>
-                <AppText style={styles.body}>
-                  {item.customer_name} · {item.party_size} pers. · {item.status}
-                </AppText>
-                {item.status === 'REQUESTED' ? (
-                  <Button
-                    label={t('service.confirm')}
-                    variant="outline"
-                    onPress={() => changeReservationStatus(item.id, 'CONFIRMED').then(refresh)}
-                  />
-                ) : null}
-              </View>
-            ))
-          ) : (
-            <AppText variant="muted">{t('service.noReservations')}</AppText>
-          )}
-        </View>
-      ) : null}
+      {hasReservations ? <ReservationPanel establishmentId={establishmentId} /> : null}
       {hasDelivery ? (
         <View style={styles.card}>
           <AppText variant="subtitle">{t('service.deliveries')}</AppText>
