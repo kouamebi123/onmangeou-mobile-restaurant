@@ -35,7 +35,7 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => {
     const unsubscribe = useAuthStore.subscribe((next, previous) => {
-      if (previous.sessionId && next.sessionId !== previous.sessionId) queryClient.clear();
+      if (next.sessionScope !== previous.sessionScope || next.organizationId !== previous.organizationId) queryClient.clear();
     });
     const appState = AppState.addEventListener('change', (status) => {
       if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');

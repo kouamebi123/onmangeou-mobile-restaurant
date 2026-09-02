@@ -13,9 +13,10 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   sessionId: string | null;
+  sessionScope: string | null;
   organizationId: string | null;
   hydrate: () => Promise<void>;
-  setSession: (tokens: TokenPair, organizationId?: string | null) => Promise<void>;
+  setSession: (tokens: TokenPair, organizationId?: string | null, isRefresh?: boolean) => Promise<void>;
   setOrganizationId: (organizationId: string | null) => Promise<void>;
   clear: () => Promise<void>;
 }
@@ -36,6 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
   refreshToken: null,
   sessionId: null,
+  sessionScope: null,
   organizationId: null,
 
   hydrate: async () => {
@@ -45,17 +47,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: stored?.accessToken ?? null,
       refreshToken: stored?.refreshToken ?? null,
       sessionId: stored?.sessionId ?? null,
+      sessionScope: stored?.sessionId ?? null,
       organizationId: stored?.organizationId ?? null,
     });
   },
 
-  setSession: async (tokens, organizationId) => {
+  setSession: async (tokens, organizationId, isRefresh = false) => {
     const nextOrganizationId = organizationId === undefined ? get().organizationId : organizationId;
     await writeStoredSession(toStored(tokens, nextOrganizationId));
     set({
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       sessionId: tokens.sessionId,
+      sessionScope: isRefresh ? get().sessionScope : tokens.sessionId,
       organizationId: nextOrganizationId,
     });
   },
@@ -83,6 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken: null,
       refreshToken: null,
       sessionId: null,
+      sessionScope: null,
       organizationId: null,
     });
   },

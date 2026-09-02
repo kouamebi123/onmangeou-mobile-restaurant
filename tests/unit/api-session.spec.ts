@@ -15,14 +15,14 @@ const fail = (status: number) => new Response(JSON.stringify({ status, code: sta
 beforeEach(() => {
   mock.fetch.mockReset(); mock.state.clear.mockReset(); mock.state.setSession.mockReset();
   Object.assign(mock.state, { accessToken: 'old', refreshToken: 'refresh', sessionId: 'session', organizationId: null });
-  mock.state.setSession.mockImplementation(async (tokens: { accessToken: string }) => { mock.state.accessToken = tokens.accessToken; });
+  mock.state.setSession.mockImplementation(async (tokens: { accessToken: string; refreshToken: string; sessionId: string }) => { Object.assign(mock.state, tokens); });
   vi.stubGlobal('fetch', mock.fetch);
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe('Network and session safety', () => {
   it('keeps the same idempotency key when retrying after token refresh', async () => {
-    mock.fetch.mockResolvedValueOnce(fail(401)).mockResolvedValueOnce(ok({ accessToken: 'new' })).mockResolvedValueOnce(ok({ id: 'one' }));
+    mock.fetch.mockResolvedValueOnce(fail(401)).mockResolvedValueOnce(ok({ accessToken: 'new', refreshToken: 'rotated', sessionId: 'rotated-session' })).mockResolvedValueOnce(ok({ id: 'one' }));
     expect((await apiRequest('/orders', { method: 'POST', body: { test: true }, idempotent: true })).data).toEqual({ id: 'one' });
     const first = mock.fetch.mock.calls[0]?.[1] as RequestInit;
     const retried = mock.fetch.mock.calls[2]?.[1] as RequestInit;

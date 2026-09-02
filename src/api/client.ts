@@ -25,7 +25,7 @@ export interface UploadAsset {
   mimeType?: string;
 }
 
-let refreshInFlight: Promise<boolean> | null = null;
+let refreshInFlight: Promise<string | null> | null = null;
 
 export function getApiBaseUrl(): string {
   const configured = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL;
@@ -68,7 +68,7 @@ async function parseBody(response: Response): Promise<unknown> {
   }
 }
 
-async function refreshSession(): Promise<boolean> {
+async function refreshSession(): Promise<string | null> {
   if (refreshInFlight) {
     return refreshInFlight;
   }
@@ -76,7 +76,7 @@ async function refreshSession(): Promise<boolean> {
   refreshInFlight = (async () => {
     const { refreshToken, organizationId, setSession, clear } = useAuthStore.getState();
     if (!refreshToken) {
-      return false;
+      return null;
     }
 
     try {
@@ -89,15 +89,15 @@ async function refreshSession(): Promise<boolean> {
         body,
         auth: false,
       });
-      if (useAuthStore.getState().refreshToken !== refreshToken || useAuthStore.getState().organizationId !== organizationId) return false;
-      await setSession(envelope.data);
-      return true;
+      if (useAuthStore.getState().refreshToken !== refreshToken || useAuthStore.getState().organizationId !== organizationId) return null;
+      await setSession(envelope.data, undefined, true);
+      return envelope.data.sessionId;
     } catch (error) {
-      if (useAuthStore.getState().refreshToken !== refreshToken || useAuthStore.getState().organizationId !== organizationId) return false;
+      if (useAuthStore.getState().refreshToken !== refreshToken || useAuthStore.getState().organizationId !== organizationId) return null;
       // A network/server outage is not proof that the session was revoked.
       if (error instanceof ApiError && error.problem.status === 401) {
         await clear();
-        return false;
+        return null;
       }
       throw error;
     }
@@ -159,6 +159,7 @@ async function rawRequest<T>(path: string, options: RequestOptions = {}): Promis
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<ResponseEnvelope<T>> {
   const sessionId = useAuthStore.getState().sessionId;
+  const organizationId = useAuthStore.getState().organizationId;
   const stableOptions = options.idempotent && !options.idempotencyKey
     ? { ...options, idempotencyKey: createRequestId() } : options;
   try {
@@ -166,11 +167,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   } catch (error) {
     const unauthorized =
       error instanceof ApiError && (error.problem.status === 401 || error.problem.code === 'SESSION_EXPIRED');
-    const canRefresh = options.auth !== false && sessionId === useAuthStore.getState().sessionId && Boolean(useAuthStore.getState().refreshToken);
+    const canRefresh = options.auth !== false && sessionId === useAuthStore.getState().sessionId
+      && organizationId === useAuthStore.getState().organizationId && Boolean(useAuthStore.getState().refreshToken);
 
     if (unauthorized && canRefresh && !path.startsWith('/auth/refresh')) {
       const refreshed = await refreshSession();
-      if (refreshed && sessionId === useAuthStore.getState().sessionId) {
+      if (refreshed && refreshed === useAuthStore.getState().sessionId && organizationId === useAuthStore.getState().organizationId) {
         return rawRequest<T>(path, stableOptions);
       }
     }
@@ -221,12 +223,15 @@ async function rawUpload<T>(path: string, asset: UploadAsset): Promise<ResponseE
 
 export async function apiUpload<T>(path: string, asset: UploadAsset): Promise<ResponseEnvelope<T>> {
   const sessionId = useAuthStore.getState().sessionId;
+  const organizationId = useAuthStore.getState().organizationId;
   try {
     return await rawUpload<T>(path, asset);
   } catch (error) {
     const unauthorized = error instanceof ApiError && error.problem.status === 401;
-    if (unauthorized && sessionId === useAuthStore.getState().sessionId && await refreshSession()
-      && sessionId === useAuthStore.getState().sessionId) return rawUpload<T>(path, asset);
+    if (unauthorized && sessionId === useAuthStore.getState().sessionId && organizationId === useAuthStore.getState().organizationId) {
+      const refreshed = await refreshSession();
+      if (refreshed && refreshed === useAuthStore.getState().sessionId && organizationId === useAuthStore.getState().organizationId) return rawUpload<T>(path, asset);
+    }
     throw error;
   }
 }
