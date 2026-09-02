@@ -188,6 +188,9 @@ export interface MerchantOrder {
   notes: string | null;
   items: MerchantOrderItem[];
   total: MoneyView;
+  subtotal?: MoneyView;
+  discount?: MoneyView;
+  couponCode?: string | null;
   placedAt: string;
   scheduledFor?: string | null;
   timezone?: string;
@@ -446,15 +449,20 @@ export async function createTable(establishmentId: string, name: string, seats: 
   await apiRequest('/merchant/tables', { method: 'POST', body: { establishmentId, name, seats } });
 }
 
-export async function fetchCoupons(establishmentId: string) {
-  const envelope = await apiRequest<Array<{ id: string; code: string; discount_bps: number }>>('/merchant/coupons', {
-    query: { establishmentId },
+export async function fetchCoupons(establishmentId: string, offset = 0) {
+  const envelope = await apiRequest<Array<{ id: string; code: string; discount_bps: number; active: boolean; expires_at: string | null; minimum_amount: string }>>('/merchant/coupons', {
+    query: { establishmentId, offset },
   });
   return envelope.data;
 }
 
-export async function createCoupon(establishmentId: string, code: string, discountBps: number) {
-  await apiRequest('/merchant/coupons', { method: 'POST', body: { establishmentId, code, discountBps } });
+export async function createCoupon(establishmentId: string, code: string, discountBps: number, idempotencyKey: string,
+  conditions: { minimumAmount?: string; expiresAt?: string } = {}) {
+  await apiRequest('/merchant/coupons', { method: 'POST', body: { establishmentId, code, discountBps, ...conditions }, idempotent: true, idempotencyKey });
+}
+
+export async function setCouponActive(id: string, active: boolean) {
+  await apiRequest(`/merchant/coupons/${id}/status`, { method: 'POST', body: { active } });
 }
 
 export async function submitVerification(establishmentId: string) {

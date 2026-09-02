@@ -1,6 +1,7 @@
 import { DeliveryPanel, ReviewPanel } from './service-panels';
 import { ReservationPanel } from './reservation-panel';
 import { EventsPanel } from './events-panel';
+import { CouponsPanel } from './coupons-panel';
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -11,10 +12,8 @@ import { useEffect, useState } from 'react';
 
 import { fetchMe, refreshTokens } from '@/api/auth';
 import {
-  createCoupon,
   createOrganization,
   createTable,
-  fetchCoupons,
   fetchEntitlements,
   fetchEstablishments,
   fetchHours,
@@ -615,50 +614,6 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
         loading={invite.isPending}
         disabled={phone.trim().length < 8}
         onPress={() => invite.mutate()}
-      />
-    </View>
-  );
-}
-
-function CouponsPanel({ establishmentId }: { establishmentId: string }) {
-  const entitlements = useQuery({ queryKey: ['merchant', 'entitlements'], queryFn: () => fetchEntitlements() });
-  const enabled = hasModule(entitlements.data?.enabledModules, MODULE_CODES.MARKETING_PROMOTIONS);
-  const queryClient = useQueryClient();
-  const [code, setCode] = useState('');
-  const [percent, setPercent] = useState('');
-  const coupons = useQuery({
-    queryKey: ['merchant', 'coupons', establishmentId],
-    queryFn: () => fetchCoupons(establishmentId),
-    enabled,
-  });
-  if (!enabled) {
-    return null;
-  }
-  return (
-    <View style={styles.card}>
-      <AppText variant="subtitle">{t('manage.coupons')}</AppText>
-      {coupons.data?.map((item) => (
-        <AppText key={item.id}>
-          {item.code} · −{Math.round(item.discount_bps / 100)} %
-        </AppText>
-      ))}
-      <TextField label={t('manage.couponCode')} value={code} onChangeText={setCode} />
-      <TextField label={t('manage.couponDiscount')} keyboardType="number-pad" value={percent} onChangeText={setPercent} />
-      <Button
-        label={t('manage.createCoupon')}
-        variant="outline"
-        disabled={code.trim().length < 3 || Number.parseInt(percent, 10) <= 0}
-        onPress={() => {
-          const parsed = Number.parseInt(percent, 10);
-          if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 100) {
-            return;
-          }
-          createCoupon(establishmentId, code.trim(), parsed * 100).then(() => {
-            setCode('');
-            setPercent('');
-            void queryClient.invalidateQueries({ queryKey: ['merchant', 'coupons'] });
-          });
-        }}
       />
     </View>
   );

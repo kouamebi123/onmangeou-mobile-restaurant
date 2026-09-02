@@ -190,6 +190,10 @@ function TicketCard({
           {t('orders.notes')} : {order.notes}
         </AppText>
       ) : null}
+      {order.couponCode && order.discount && order.subtotal ? <>
+        <AppText variant="muted">{t('couponManager.subtotal')}: {order.subtotal.formatted}</AppText>
+        <AppText>{t('couponManager.discount', { code: order.couponCode })}: −{order.discount.formatted}</AppText>
+      </> : null}
       <Price value={order.total} />
       {actions.length > 0 ? (
         <View style={styles.actions}>
