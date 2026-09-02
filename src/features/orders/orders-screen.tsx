@@ -133,7 +133,7 @@ function TicketCard({
   busy: boolean;
   onAction: (status: Exclude<MerchantOrderStatus, 'PENDING_PAYMENT' | 'PENDING_RESTAURANT' | 'CANCELLED'>) => void;
 }) {
-  const actions = NEXT_ACTIONS[order.status];
+  const actions = NEXT_ACTIONS[order.status].filter((action) => order.service !== 'DELIVERY' || action.status !== 'COMPLETED');
 
   return (
     <View style={styles.card}>

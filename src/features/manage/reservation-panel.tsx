@@ -26,6 +26,7 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
   });
   return <View style={{ gap: tokens.spacing.sm }}>
     <AppText variant="subtitle">{t('service.reservations')}</AppText>
+    <AppText variant="caption">{t('reservation.duration')}</AppText>
     <Button variant="ghost" label={t('reservation.refresh')} onPress={() => void reservations.refetch()} />
     {reservations.isPending ? <AppText>{t('reservation.loading')}</AppText> : null}
     {reservations.isError ? <AppText>{t('reservation.error')}</AppText> : null}
@@ -38,6 +39,7 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
       <AppText selectable>{new Date(item.starts_at).toLocaleString('fr-FR', { timeZone: item.timezone ?? 'Africa/Abidjan', dateStyle: 'full', timeStyle: 'short' })}</AppText>
       <AppText variant="caption">{item.timezone ?? 'Africa/Abidjan'} · {item.public_ref}</AppText>
       <AppText>{t(`reservation.${item.status}`)}</AppText>
+      {item.table_name ? <AppText>{t('reservation.table', { name: item.table_name })}</AppText> : null}
       <AppText selectable>{item.customer_phone}</AppText>
       {item.notes ? <AppText>{item.notes}</AppText> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs }}>

@@ -299,6 +299,28 @@
       "SEATED": "Client installé",
       "COMPLETED": "Terminer",
       "NO_SHOW": "Signaler une absence"
+    },
+    "duration": "Occupation prévue : 2 heures. Configurez vos tables avant de confirmer.",
+    "table": "Table attribuée : {name}"
+  },
+  "operations": {
+    "loading": "Chargement…",
+    "retry": "Réessayer",
+    "saved": "Réponse enregistrée.",
+    "error": "L’action n’a pas abouti. Réessayez.",
+    "status": {
+      "UNASSIGNED": "À affecter",
+      "ASSIGNED": "Livreur affecté",
+      "PICKED_UP": "Commande récupérée",
+      "DELIVERING": "En livraison",
+      "DELIVERED": "Livrée",
+      "CANCELLED": "Annulée"
+    },
+    "action": {
+      "ASSIGNED": "Affecter le livreur",
+      "PICKED_UP": "Confirmer la récupération",
+      "DELIVERING": "Démarrer la livraison",
+      "DELIVERED": "Confirmer la livraison"
     }
   }
 }

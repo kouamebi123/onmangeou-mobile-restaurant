@@ -1,3 +1,4 @@
+import { DeliveryPanel, ReviewPanel } from './service-panels';
 import { ReservationPanel } from './reservation-panel';
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
@@ -9,24 +10,20 @@ import { useEffect, useState } from 'react';
 
 import { fetchMe, refreshTokens } from '@/api/auth';
 import {
-  changeDeliveryStatus,
   createCoupon,
   createEvent,
   createOrganization,
   createTable,
   fetchCoupons,
-  fetchDeliveries,
   fetchEntitlements,
   fetchEstablishments,
   fetchHours,
   fetchMembers,
-  fetchMerchantReviews,
   fetchTables,
   hasModule,
   inviteMember,
   MODULE_CODES,
   publishEstablishment,
-  respondReview,
   saveHours,
   submitVerification,
   updateEstablishment,
@@ -377,7 +374,6 @@ function AmenityToggle({
 
 function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
-  const [reply, setReply] = useState('');
   const [eventTitle, setEventTitle] = useState('');
   const entitlements = useQuery({
     queryKey: ['merchant', 'entitlements'],
@@ -390,16 +386,6 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const hasReviews = hasModule(enabled, MODULE_CODES.STOREFRONT_BASIC);
   const hasMarketing = hasModule(enabled, MODULE_CODES.MARKETING_PROMOTIONS);
 
-  const deliveries = useQuery({
-    queryKey: ['merchant', 'deliveries', establishmentId],
-    queryFn: () => fetchDeliveries(establishmentId),
-    enabled: ready && hasDelivery,
-  });
-  const reviews = useQuery({
-    queryKey: ['merchant', 'reviews', establishmentId],
-    queryFn: () => fetchMerchantReviews(establishmentId),
-    enabled: ready && hasReviews,
-  });
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['merchant'] });
   };
@@ -412,66 +398,10 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
     <>
       <SectionHeading title={t('service.title')} />
       {hasReservations ? <ReservationPanel establishmentId={establishmentId} /> : null}
-      {hasDelivery ? (
-        <View style={styles.card}>
-          <AppText variant="subtitle">{t('service.deliveries')}</AppText>
-          {deliveries.data?.length ? (
-            deliveries.data.map((item) => (
-              <View key={item.id} style={styles.row}>
-                <AppText style={styles.body}>
-                  {item.public_ref} · {item.status}
-                </AppText>
-                {item.status === 'UNASSIGNED' ? (
-                  <Button
-                    label={t('service.assign')}
-                    variant="outline"
-                    onPress={() => changeDeliveryStatus(item.id, 'ASSIGNED').then(refresh)}
-                  />
-                ) : null}
-                {item.status === 'ASSIGNED' ? (
-                  <Button
-                    label={t('service.delivered')}
-                    variant="outline"
-                    onPress={() => changeDeliveryStatus(item.id, 'DELIVERED').then(refresh)}
-                  />
-                ) : null}
-              </View>
-            ))
-          ) : (
-            <AppText variant="muted">{t('service.noDeliveries')}</AppText>
-          )}
-        </View>
-      ) : null}
+      {hasDelivery ? <DeliveryPanel establishmentId={establishmentId} /> : null}
       {hasReviews || hasMarketing ? (
         <View style={styles.card}>
-          {hasReviews ? (
-            <>
-              <AppText variant="subtitle">{t('service.reviews')}</AppText>
-              {reviews.data?.length ? (
-                reviews.data.map((item) => (
-                  <View key={item.id} style={{ gap: tokens.spacing.xs }}>
-                    <AppText>
-                      {item.score}/5 · {item.body}
-                    </AppText>
-                    <TextField label={t('service.reply')} value={reply} onChangeText={setReply} />
-                    <Button
-                      label={t('service.sendReply')}
-                      variant="outline"
-                      disabled={reply.trim().length < 2}
-                      onPress={() =>
-                        respondReview(item.id, reply.trim()).then(() => {
-                          setReply('');
-                          refresh();
-                        })
-                      }
-                    />
-                  </View>
-                ))
-              ) : (
-                <AppText variant="muted">{t('service.noReviews')}</AppText>
-              )}
-            </>
-          ) : null}
+          {hasReviews ? <ReviewPanel establishmentId={establishmentId} /> : null}
           {hasMarketing ? (
             <>
               <TextField label={t('service.eventTitle')} value={eventTitle} onChangeText={setEventTitle} />

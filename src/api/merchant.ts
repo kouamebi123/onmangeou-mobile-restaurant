@@ -272,7 +272,7 @@ export async function createOrganization(input: {
 }
 
 export async function fetchMerchantReservations(establishmentId?: string) {
-  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; customer_phone: string; party_size: number; starts_at: string; timezone?: string; notes: string | null }>>(
+  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; customer_phone: string; party_size: number; starts_at: string; timezone?: string; table_name?: string | null; notes: string | null }>>(
     '/merchant/reservations',
     { query: { establishmentId } },
   );
@@ -319,7 +319,7 @@ export async function createDebt(establishmentId: string, supplierName: string, 
 }
 
 export async function fetchDeliveries(establishmentId: string) {
-  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; address_text: string | null }>>(
+  const envelope = await apiRequest<Array<{ id: string; public_ref: string; status: string; customer_name: string; address_text: string | null; allowedActions: string[] }>>(
     '/merchant/deliveries',
     { query: { establishmentId } },
   );
@@ -401,7 +401,7 @@ export async function createEvent(establishmentId: string, title: string, starts
 }
 
 export async function fetchMerchantReviews(establishmentId: string) {
-  const envelope = await apiRequest<Array<{ id: string; score: number; body: string | null }>>(`/restaurants/${establishmentId}/reviews`);
+  const envelope = await apiRequest<Array<{ id: string; score: number; body: string | null; response: string | null }>>(`/restaurants/${establishmentId}/reviews`);
   return envelope.data;
 }
 
