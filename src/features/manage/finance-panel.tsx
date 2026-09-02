@@ -26,6 +26,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { SectionHeading } from '@/components/section-heading';
 import { TextField } from '@/components/text-field';
+import { hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
 
@@ -358,6 +359,7 @@ function StockCard({
   const create = useMutation({
     mutationFn: () => createInventoryItem(establishmentId, name.trim(), Number(digits(quantity)), unit.trim() || 'u'),
     onSuccess: () => {
+      hapticSuccess();
       setName('');
       setQuantity('');
       onDone();
@@ -369,6 +371,7 @@ function StockCard({
   const move = useMutation({
     mutationFn: () => moveStock(selectedId ?? '', Number(delta.replace(/[^\d-]/g, '')), reason.trim()),
     onSuccess: () => {
+      hapticSuccess();
       setDelta('');
       setReason('');
       onDone();
@@ -455,7 +458,7 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs },
   chip: {
-    minHeight: 36,
+    minHeight: tokens.layout.minTouchTarget,
     borderRadius: tokens.radius.pill,
     borderWidth: 1,
     borderColor: tokens.color.border.default,
@@ -465,7 +468,7 @@ const styles = StyleSheet.create({
   },
   chipOn: { backgroundColor: tokens.color.brand.primary, borderColor: tokens.color.brand.primary },
   stockRow: {
-    minHeight: 40,
+    minHeight: tokens.layout.minTouchTarget,
     borderRadius: tokens.radius.md,
     borderWidth: 1,
     borderColor: tokens.color.border.default,

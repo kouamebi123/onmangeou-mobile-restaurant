@@ -12,6 +12,7 @@ import { Button } from '@/components/button';
 import { PageHero } from '@/components/page-hero';
 import { Screen } from '@/components/screen';
 import { TextField } from '@/components/text-field';
+import { hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
 import { tokens } from '@/theme';
@@ -46,6 +47,7 @@ export function MoreScreen() {
       if (avatar) await uploadAvatar(avatar);
     },
     onSuccess: () => {
+      hapticSuccess();
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
   });
