@@ -94,7 +94,7 @@ export function BrandIntro({ onDone }: { onDone: () => void }) {
 
 const styles = StyleSheet.create({
   screen: {
-    ...StyleSheet.absoluteFill,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: tokens.color.brand.deep,
     overflow: 'hidden',
     zIndex: 40,

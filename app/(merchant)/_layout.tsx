@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fetchEntitlements, isMerchantTabEnabled } from '@/api/merchant';
 import { TabIcon } from '@/components/tab-icon';
@@ -23,6 +24,8 @@ export default function MerchantTabsLayout() {
 }
 
 function MerchantTabs({ accessToken }: { accessToken: string }) {
+  const insets = useSafeAreaInsets();
+  const bottomPad = Math.max(insets.bottom - 14, 0);
   const entitlements = useQuery({
     queryKey: ['merchant', 'entitlements'],
     queryFn: () => fetchEntitlements(),
@@ -40,7 +43,8 @@ function MerchantTabs({ accessToken }: { accessToken: string }) {
         tabBarStyle: {
           backgroundColor: tokens.color.surface.white,
           borderTopColor: tokens.color.border.default,
-          height: 64,
+          height: 64 + bottomPad,
+          paddingBottom: bottomPad,
         },
         tabBarLabelStyle: {
           fontFamily: tokens.typography.family.semibold,
