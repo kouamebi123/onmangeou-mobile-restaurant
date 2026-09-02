@@ -148,6 +148,9 @@ function TicketCard({
           </AppText>
         </View>
       </View>
+      <AppText variant="muted">{order.scheduledFor ? t('schedule.requested', { date: new Intl.DateTimeFormat('fr-CI', {
+        timeZone: order.timezone ?? 'Africa/Abidjan', dateStyle: 'medium', timeStyle: 'short',
+      }).format(new Date(order.scheduledFor)) }) : t('schedule.immediate')}</AppText>
       {order.items.map((item) => (
         <AppText key={item.id}>
           {item.quantity} × {item.name}

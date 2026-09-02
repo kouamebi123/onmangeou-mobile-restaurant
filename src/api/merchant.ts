@@ -189,6 +189,8 @@ export interface MerchantOrder {
   items: MerchantOrderItem[];
   total: MoneyView;
   placedAt: string;
+  scheduledFor?: string | null;
+  timezone?: string;
 }
 
 export async function fetchMerchantOrders(establishmentId?: string): Promise<MerchantOrder[]> {
