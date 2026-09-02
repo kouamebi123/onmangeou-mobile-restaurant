@@ -21,4 +21,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      - run: pnpm exec expo config --type public
+      - run: pnpm export:mobile
       - run: pnpm exec expo export --platform web

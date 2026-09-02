@@ -7,6 +7,13 @@ const config: ExpoConfig = {
   extra: {
     eas: { projectId: '88a9ebeb-d938-4fb8-b688-cc09d506f326' },
   },
+  updates: {
+    url: 'https://u.expo.dev/88a9ebeb-d938-4fb8-b688-cc09d506f326',
+  },
+  // Same Expo Go runtime policy as the client app.
+  runtimeVersion: {
+    policy: 'sdkVersion',
+  },
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -43,11 +50,11 @@ const config: ExpoConfig = {
     ],
     'expo-secure-store',
     'expo-font',
-    'expo-image',
     [
       'expo-image-picker',
       {
         photosPermission: 'OnMangeOu utilise vos photos pour illustrer votre restaurant et vos plats.',
+        microphonePermission: false,
       },
     ],
   ],

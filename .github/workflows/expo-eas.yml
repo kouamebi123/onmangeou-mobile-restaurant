@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Verifier la liaison ou lancer un build
+        description: Verifier, publier une preview Expo Go ou construire un binaire
         type: choice
-        options: [verify, build]
+        options: [verify, update, build]
         default: verify
         required: true
       platform:
@@ -51,6 +51,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      - name: Verifier les bundles iOS et Android
+        run: pnpm export:mobile
       - name: Verifier la presence du secret
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -76,3 +78,6 @@ jobs:
           case "$BUILD_PLATFORM" in android|ios|all) ;; *) exit 1 ;; esac
           case "$BUILD_PROFILE" in preview|production) ;; *) exit 1 ;; esac
           eas build --platform "$BUILD_PLATFORM" --profile "$BUILD_PROFILE" --non-interactive --wait
+      - name: Publier la preview Expo Go (iOS et Android)
+        if: inputs.operation == 'update'
+        run: eas update --branch preview --environment preview --platform all --message "Preview restaurant ${{ github.sha }}" --non-interactive
