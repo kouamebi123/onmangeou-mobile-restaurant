@@ -111,7 +111,7 @@ export function MoreScreen() {
 
       <Button
         label={t('common.signOut')}
-        variant="outline"
+        variant="destructive"
         onPress={async () => {
           try {
             await logout();

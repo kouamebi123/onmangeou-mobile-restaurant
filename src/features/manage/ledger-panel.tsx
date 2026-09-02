@@ -14,10 +14,10 @@ export function LedgerPanel({establishmentId}:{establishmentId:string}){
  const [kind,setKind]=useState<LedgerKind>('credits');
  const list=useInfiniteQuery({queryKey:['merchant','ledger',establishmentId,kind],initialPageParam:0,
  queryFn:({pageParam})=>fetchLedger(kind,establishmentId,pageParam),getNextPageParam:last=>last.nextOffset??undefined});
- return <View style={{gap:tokens.spacing.sm}}>
+ return <CompletionCard>
   <AppText variant="subtitle">{t('ledger.title')}</AppText>
   <AppText variant="muted">{t('ledger.hint')}</AppText>
-  <View style={{flexDirection:'row',gap:tokens.spacing.sm}}>
+  <View style={{flexDirection:'row',flexWrap:'wrap',gap:tokens.spacing.sm}}>
    {(['credits','debts'] as const).map(value=><Button key={value} label={t(`finance.${value}`)} variant={kind===value?'primary':'outline'} onPress={()=>setKind(value)}/>)}
   </View>
   {list.isPending?<AppText>{t('common.loading')}</AppText>:null}
@@ -26,7 +26,7 @@ export function LedgerPanel({establishmentId}:{establishmentId:string}){
   {list.data?.pages.flatMap(p=>p.items).map(item=><LedgerCard key={kind+item.id} item={item} kind={kind}/>)}
   {list.isSuccess&&!list.data.pages[0]?.items.length?<AppText>{t('ledger.empty')}</AppText>:null}
   {list.hasNextPage?<Button label={t('ledger.more')} loading={list.isFetchingNextPage} onPress={()=>void list.fetchNextPage()}/>:null}
- </View>;
+ </CompletionCard>;
 }
 function LedgerCard({item,kind}:{item:LedgerEntry;kind:LedgerKind}){
  const client=useQueryClient();

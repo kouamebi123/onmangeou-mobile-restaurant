@@ -23,7 +23,7 @@ interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
 const palettes: Record<Variant, { bg: string; text: string; border: string }> = {
   primary: { bg: tokens.color.brand.primary, text: tokens.color.text.onBrand, border: tokens.color.brand.primary },
   secondary: { bg: tokens.color.brand.accent, text: tokens.color.text.onBrand, border: tokens.color.brand.accent },
-  outline: { bg: 'transparent', text: tokens.color.brand.deep, border: tokens.color.border.default },
+  outline: { bg: tokens.color.surface.white, text: tokens.color.brand.deep, border: tokens.color.brand.primary },
   ghost: { bg: 'transparent', text: tokens.color.brand.primary, border: 'transparent' },
   destructive: { bg: tokens.color.feedback.error, text: tokens.color.text.onBrand, border: tokens.color.feedback.error },
 };
@@ -36,6 +36,7 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,

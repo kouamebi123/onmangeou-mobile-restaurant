@@ -164,11 +164,13 @@ export function CatalogScreen() {
 
       {selectedId ? (
         <>
-          <Button
-            label={formOpen ? t('catalog.hideForm') : t('catalog.showForm')}
-            variant="outline"
-            onPress={() => setFormOpen((open) => !open)}
-          />
+          <View style={styles.card}>
+            <Button
+              label={formOpen ? t('catalog.hideForm') : t('catalog.showForm')}
+              variant={formOpen ? 'outline' : 'primary'}
+              onPress={() => setFormOpen((open) => !open)}
+            />
+          </View>
           {formOpen ? (
             <View style={styles.card}>
               <SectionHeading title={editing ? t('catalog.editDish') : t('catalog.newDish')} />

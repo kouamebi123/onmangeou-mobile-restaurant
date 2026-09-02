@@ -1,6 +1,7 @@
 import { DeliveryPanel, ReviewPanel } from './service-panels';
 import { ReservationPanel } from './reservation-panel';
 import { EventsPanel } from './events-panel';
+import { CompletionCard } from './completion-ui';
 import { CouponsPanel } from './coupons-panel';
 import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
@@ -403,17 +404,13 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   }
 
   return (
-    <>
+    <CompletionCard>
       <SectionHeading title={t('service.title')} />
-      {hasReservations ? <ReservationPanel establishmentId={establishmentId} /> : null}
-      {hasDelivery ? <DeliveryPanel establishmentId={establishmentId} /> : null}
-      {hasReviews || hasMarketing ? (
-        <View style={styles.card}>
-          {hasReviews ? <ReviewPanel establishmentId={establishmentId} /> : null}
-          {hasMarketing ? <EventsPanel establishmentId={establishmentId} /> : null}
-        </View>
-      ) : null}
-    </>
+      {hasReservations ? <View style={styles.serviceSection}><ReservationPanel establishmentId={establishmentId} /></View> : null}
+      {hasDelivery ? <View style={styles.serviceSection}><DeliveryPanel establishmentId={establishmentId} /></View> : null}
+      {hasReviews ? <View style={styles.serviceSection}><ReviewPanel establishmentId={establishmentId} /></View> : null}
+      {hasMarketing ? <View style={styles.serviceSection}><EventsPanel establishmentId={establishmentId} /></View> : null}
+    </CompletionCard>
   );
 }
 
@@ -620,6 +617,12 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
 }
 
 const styles = StyleSheet.create({
+  serviceSection: {
+    borderTopWidth: 1,
+    borderTopColor: tokens.color.border.default,
+    paddingTop: tokens.spacing.md,
+    gap: tokens.spacing.sm,
+  },
   card: {
     gap: tokens.spacing.sm,
     padding: tokens.spacing.md,

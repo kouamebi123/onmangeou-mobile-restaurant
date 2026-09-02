@@ -130,7 +130,7 @@ export function ActivityScreen() {
           <Button label={t('activity.openCatalog')} onPress={() => router.push('/catalog')} />
           <Button
             label={t('activity.openManage')}
-            variant="outline"
+            variant="primary"
             onPress={() => router.push('/manage')}
           />
         </View>
