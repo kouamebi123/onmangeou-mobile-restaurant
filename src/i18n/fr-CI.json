@@ -1,4 +1,37 @@
 {
+  "reviewPhotos": {
+    "afterPublish": "Publiez votre avis pour ajouter jusqu’à trois photos.",
+    "hint": "Trois photos maximum, 8 Mo par image. Évitez les visages et les informations privées.",
+    "choose": "Choisir une photo",
+    "send": "Ajouter cette photo",
+    "remove": "Supprimer",
+    "alt": "Photo jointe à l’avis",
+    "pickError": "Impossible d’ouvrir cette photo. Vérifiez les autorisations."
+  },
+  "reviewReport": {
+    "open": "Signaler cet avis",
+    "hint": "Choisissez un motif. L’équipe examinera le signalement avant toute décision.",
+    "SPAM": "Publicité ou spam",
+    "ABUSE": "Insultes ou harcèlement",
+    "PRIVACY": "Informations privées",
+    "MISLEADING": "Contenu trompeur",
+    "OTHER": "Autre motif",
+    "detail": "Précisions (facultatif)",
+    "send": "Envoyer le signalement",
+    "sent": "Signalement enregistré. Merci, notre équipe va l’examiner."
+  },
+  "push": {
+    "title": "Notifications",
+    "channel": "Commandes et réservations",
+    "hint": "Recevez les mises à jour de vos commandes et réservations sur cet appareil.",
+    "developmentBuild": "Les notifications push nécessitent une version installée de l’application. Cette fonction est désactivée dans Expo Go et sur le web.",
+    "activate": "Activer les notifications",
+    "disable": "Désactiver sur cet appareil",
+    "enabled": "Cet appareil est inscrit aux notifications.",
+    "disabled": "Notifications désactivées sur cet appareil.",
+    "denied": "Notifications non autorisées. Vous pouvez modifier ce choix dans les réglages du téléphone.",
+    "error": "Impossible de configurer les notifications. Réessayez."
+  },
   "network": {
     "timeout": "Le serveur met trop de temps à répondre. Vérifiez le suivi avant de relancer une commande.",
     "offline": "Connexion interrompue. Vérifiez votre accès Internet puis réessayez."

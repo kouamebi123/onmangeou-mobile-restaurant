@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ReviewPhotos } from './review-photos';
+import { ReportReview } from './report-review';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { changeDeliveryStatus, fetchDeliveries, fetchMerchantReviews, respondReview } from '@/api/merchant';
@@ -50,7 +52,7 @@ export function ReviewPanel({ establishmentId }: { establishmentId: string }) {
   </View>;
 }
 
-function ReviewReply({ item }: { item: { id: string; score: number; body: string | null; response: string | null } }) {
+function ReviewReply({ item }: { item: { id: string; score: number; body: string | null; response: string | null; photos?:string[] } }) {
   const client = useQueryClient();
   const [body, setBody] = useState(item.response ?? '');
   const save = useMutation({
@@ -59,6 +61,8 @@ function ReviewReply({ item }: { item: { id: string; score: number; body: string
   });
   return <View style={{ gap: tokens.spacing.xs }}>
     <AppText>{item.score}/5 · {item.body}</AppText>
+    <ReviewPhotos reviewId={item.id} photos={item.photos}/>
+    <ReportReview id={item.id}/>
     <TextField label={t('service.reply')} value={body} maxLength={1000} multiline editable={!save.isPending}
       onChangeText={(value) => { setBody(value); save.reset(); }} />
     <Button label={t('service.sendReply')} loading={save.isPending} disabled={body.trim().length < 2}

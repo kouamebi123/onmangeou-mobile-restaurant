@@ -8,6 +8,7 @@
       "node": "24.19.0",
       "pnpm": "10.20.0",
       "env": {
+        "ONMANGEOU_NATIVE_RUNTIME": "1",
         "EXPO_PUBLIC_API_URL": "https://onmangeou-backend-api-production.up.railway.app/api/v1"
       }
     },

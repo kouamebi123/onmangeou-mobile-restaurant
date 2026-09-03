@@ -14,6 +14,7 @@ import { ProfileOnboarding } from '@/components/profile-onboarding';
 import { kvGet, kvSet } from '@/store/kv-store';
 import { tokens } from '@/theme';
 import { useAuthStore } from '@/store/auth-store';
+import { PushSettings } from '@/features/notifications/push-settings';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -82,6 +83,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PushSettings headless />
       <View style={styles.shell}>
         <ProfileOnboarding>{children}</ProfileOnboarding>
         {intro === 'play' ? <BrandIntro onDone={finishIntro} /> : null}

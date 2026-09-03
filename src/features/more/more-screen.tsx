@@ -16,6 +16,7 @@ import { hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
 import { tokens } from '@/theme';
+import { PushSettings } from '@/features/notifications/push-settings';
 import { Image } from 'expo-image';
 import { ImagePickerField } from '@/components/image-picker-field';
 import type { UploadAsset } from '@/api/client';
@@ -116,6 +117,7 @@ export function MoreScreen() {
         <Ionicons name="chevron-forward" size={18} color={tokens.color.surface.mint} />
       </Pressable>
 
+      <PushSettings />
       <Button
         label={t('common.signOut')}
         variant="destructive"

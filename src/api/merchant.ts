@@ -415,7 +415,7 @@ export async function createEvent(establishmentId: string, title: string, starts
 }
 
 export async function fetchMerchantReviews(establishmentId: string) {
-  const envelope = await apiRequest<Array<{ id: string; score: number; body: string | null; response: string | null }>>(`/restaurants/${establishmentId}/reviews`);
+  const envelope = await apiRequest<Array<{ id: string; score: number; body: string | null; response: string | null; photos?: string[] }>>(`/restaurants/${establishmentId}/reviews`);
   return envelope.data;
 }
 

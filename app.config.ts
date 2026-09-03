@@ -10,10 +10,10 @@ const config: ExpoConfig = {
   updates: {
     url: 'https://u.expo.dev/88a9ebeb-d938-4fb8-b688-cc09d506f326',
   },
-  // Same Expo Go runtime policy as the client app.
-  runtimeVersion: {
-    policy: 'sdkVersion',
-  },
+  // Keep Expo Go on SDK 54; native EAS builds use a compatibility fingerprint.
+  runtimeVersion: process.env.ONMANGEOU_NATIVE_RUNTIME === '1'
+    ? { policy: 'fingerprint' }
+    : { policy: 'sdkVersion' },
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -25,6 +25,7 @@ const config: ExpoConfig = {
     icon: './assets/expo.icon',
   },
   android: {
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
     adaptiveIcon: {
       backgroundColor: '#173B36',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -39,6 +40,7 @@ const config: ExpoConfig = {
     favicon: './assets/images/favicon.png',
   },
   plugins: [
+    'expo-notifications',
     'expo-router',
     [
       'expo-splash-screen',
