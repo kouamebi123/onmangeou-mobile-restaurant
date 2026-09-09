@@ -487,5 +487,42 @@
     "minutes": "{value} min",
     "invalid": "Indiquez un titre d’au moins trois caractères et une date future.",
     "save": "Enregistrer l’événement"
+  },
+  "offlineQueue": {
+    "title": "Synchronisation",
+    "saved": "Action enregistrée sur cet appareil. Consultez la synchronisation pour suivre son envoi.",
+    "pending": "En attente d’envoi",
+    "conflict": "À vérifier",
+    "empty": "Toutes les actions ont été envoyées.",
+    "loginRequired": "La session a changé. Reconnectez-vous avant de continuer.",
+    "invalid": "Vérifiez les champs de cette action.",
+    "expired": "Cette action a plus de 23 heures. Vérifiez le serveur avant de la saisir à nouveau pour éviter un doublon.",
+    "availabilityConflict": "La disponibilité a été modifiée depuis. Consultez le catalogue avant de renouveler votre choix.",
+    "hint": "Les dépenses, commandes de salle et disponibilités sont enregistrées ici avant leur envoi. Les prix et permissions sont vérifiés par le serveur.",
+    "discard": "Retirer de la file",
+    "confirmDiscard": "Confirmer le retrait",
+    "discardHint": "Retirer une action de cette liste n’annule pas une éventuelle opération déjà reçue par le serveur.",
+    "sync": "Synchroniser",
+    "expense": "Dépense",
+    "order": "Commande de salle",
+    "availability": "Disponibilité",
+    "count": "{count} action(s) à synchroniser ou vérifier — rubrique Plus.",
+    "signOut": "La déconnexion efface les données locales et les actions non envoyées de cette session.",
+    "unavailable": "Le stockage local est indisponible. Les actions ne peuvent pas être enregistrées hors connexion."
+  },
+  "ads": {
+    "title": "Campagnes sponsorisées",
+    "hint": "Proposez une mise en avant de votre restaurant. Diffusion après validation de l’administration, sans facturation dans cette version. Les mesures comptent les affichages et clics, pas les personnes uniques.",
+    "headline": "Titre de la campagne",
+    "days": "Durée en jours (1 à 90)",
+    "submit": "Soumettre à validation",
+    "submitted": "Campagne envoyée pour validation.",
+    "validation": "Indiquez un titre de trois caractères minimum et une durée de 1 à 90 jours.",
+    "metrics": "{impressions} affichages · {clicks} clics",
+    "pause": "Suspendre",
+    "PENDING": "À valider",
+    "APPROVED": "Validée",
+    "REJECTED": "Refusée",
+    "PAUSED": "Suspendue"
   }
 }

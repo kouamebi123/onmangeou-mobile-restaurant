@@ -1,17 +1,23 @@
-import { DeliveryPanel, ReviewPanel } from './service-panels';
-import { ReservationPanel } from './reservation-panel';
-import { EventsPanel } from './events-panel';
-import { CompletionCard } from './completion-ui';
-import { CouponsPanel } from './coupons-panel';
-import { useMutation, useQuery, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
-import { Controller, useForm, type UseFormReturn } from 'react-hook-form';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { CampaignsPanel } from "./campaigns-panel";
+import { DeliveryPanel, ReviewPanel } from "./service-panels";
+import { ReservationPanel } from "./reservation-panel";
+import { EventsPanel } from "./events-panel";
+import { CompletionCard } from "./completion-ui";
+import { CouponsPanel } from "./coupons-panel";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+} from "@tanstack/react-query";
+import { Controller, useForm, type UseFormReturn } from "react-hook-form";
+import { Pressable, StyleSheet, View } from "react-native";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
 
-import { fetchMe, refreshTokens } from '@/api/auth';
+import { fetchMe, refreshTokens } from "@/api/auth";
 import {
   createOrganization,
   createTable,
@@ -28,9 +34,9 @@ import {
   submitVerification,
   updateEstablishment,
   type Establishment,
-} from '@/api/merchant';
-import { FinancePanel } from '@/features/manage/finance-panel';
-import { RestaurantPlaceForm } from '@/features/onboarding/restaurant-place-form';
+} from "@/api/merchant";
+import { FinancePanel } from "@/features/manage/finance-panel";
+import { RestaurantPlaceForm } from "@/features/onboarding/restaurant-place-form";
 import {
   EMPTY_RESTAURANT_PLACE,
   minutesToClock,
@@ -40,35 +46,35 @@ import {
   WEEK_DAYS,
   type RestaurantPlaceValues,
   type WeekDay,
-} from '@/features/onboarding/restaurant-place';
-import { ApiError } from '@/api/envelope';
-import { AppText } from '@/components/app-text';
-import { Button } from '@/components/button';
-import { EmptyState } from '@/components/empty-state';
-import { ErrorState } from '@/components/error-state';
-import { PageHero } from '@/components/page-hero';
-import { Screen } from '@/components/screen';
-import { SectionHeading } from '@/components/section-heading';
-import { Skeleton } from '@/components/skeleton';
-import { TextField } from '@/components/text-field';
-import { hapticSuccess } from '@/feedback/haptics';
-import { t } from '@/i18n';
-import { useAuthStore } from '@/store/auth-store';
-import { tokens } from '@/theme';
-import { ImagePickerField } from '@/components/image-picker-field';
-import type { UploadAsset } from '@/api/client';
-import { uploadEstablishmentCover } from '@/api/merchant';
+} from "@/features/onboarding/restaurant-place";
+import { ApiError } from "@/api/envelope";
+import { AppText } from "@/components/app-text";
+import { Button } from "@/components/button";
+import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { PageHero } from "@/components/page-hero";
+import { Screen } from "@/components/screen";
+import { SectionHeading } from "@/components/section-heading";
+import { Skeleton } from "@/components/skeleton";
+import { TextField } from "@/components/text-field";
+import { hapticSuccess } from "@/feedback/haptics";
+import { t } from "@/i18n";
+import { useAuthStore } from "@/store/auth-store";
+import { tokens } from "@/theme";
+import { ImagePickerField } from "@/components/image-picker-field";
+import type { UploadAsset } from "@/api/client";
+import { uploadEstablishmentCover } from "@/api/merchant";
 
 export function ManageScreen() {
   const queryClient = useQueryClient();
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const setSession = useAuthStore((state) => state.setSession);
 
-  const me = useQuery({ queryKey: ['me'], queryFn: fetchMe });
+  const me = useQuery({ queryKey: ["me"], queryFn: fetchMe });
   const hasMembership = (me.data?.memberships.length ?? 0) > 0;
 
   const establishments = useQuery({
-    queryKey: ['merchant', 'establishments'],
+    queryKey: ["merchant", "establishments"],
     queryFn: fetchEstablishments,
     enabled: hasMembership,
   });
@@ -86,15 +92,18 @@ export function ManageScreen() {
           contactPhone: values.phone.trim(),
         });
         if (refreshToken) {
-          const refreshed = await refreshTokens(refreshToken, organization.organizationId);
+          const refreshed = await refreshTokens(
+            refreshToken,
+            organization.organizationId,
+          );
           await setSession(refreshed, organization.organizationId);
         }
       }
       await provisionEstablishment(values);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
-      void queryClient.invalidateQueries({ queryKey: ['merchant'] });
+      void queryClient.invalidateQueries({ queryKey: ["me"] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant"] });
     },
   });
 
@@ -102,9 +111,9 @@ export function ManageScreen() {
     <Screen>
       <PageHero
         icon="settings-outline"
-        kicker={t('app.name')}
-        title={t('manage.title')}
-        subtitle={t('manage.hero')}
+        kicker={t("app.name")}
+        title={t("manage.title")}
+        subtitle={t("manage.hero")}
       />
       {me.isError ? <ErrorState onRetry={() => void me.refetch()} /> : null}
 
@@ -115,19 +124,27 @@ export function ManageScreen() {
         </>
       ) : !hasMembership ? (
         <>
-          <EmptyState title={t('empty.organization')} detail={t('empty.organizationDetail')} />
+          <EmptyState
+            title={t("empty.organization")}
+            detail={t("empty.organizationDetail")}
+          />
           <CreateRestaurantCard form={form} creating={create} />
         </>
       ) : (
         <>
-          <SectionHeading title={t('manage.establishments')} />
-          {establishments.isLoading ? <AppText variant="muted">{t('common.loading')}</AppText> : null}
+          <SectionHeading title={t("manage.establishments")} />
+          {establishments.isLoading ? (
+            <AppText variant="muted">{t("common.loading")}</AppText>
+          ) : null}
           {establishments.isError ? (
             <ErrorState onRetry={() => void establishments.refetch()} />
           ) : null}
           {establishments.data && establishments.data.length === 0 ? (
             <>
-              <EmptyState title={t('empty.establishments')} detail={t('empty.establishmentsDetail')} />
+              <EmptyState
+                title={t("empty.establishments")}
+                detail={t("empty.establishmentsDetail")}
+              />
               <CreateRestaurantCard form={form} creating={create} />
             </>
           ) : null}
@@ -135,24 +152,44 @@ export function ManageScreen() {
             <View key={establishment.id} style={styles.card}>
               <View style={styles.row}>
                 <View style={styles.mark}>
-                  <Ionicons name="storefront-outline" size={18} color={tokens.color.brand.primary} />
+                  <Ionicons
+                    name="storefront-outline"
+                    size={18}
+                    color={tokens.color.brand.primary}
+                  />
                 </View>
                 <View style={styles.body}>
                   <AppText variant="subtitle">{establishment.name}</AppText>
                   <AppText variant="muted">
-                    {[establishment.district, establishment.city].filter(Boolean).join(' · ') || establishment.city}
+                    {[establishment.district, establishment.city]
+                      .filter(Boolean)
+                      .join(" · ") || establishment.city}
                   </AppText>
                 </View>
               </View>
             </View>
           ))}
-          {establishments.data?.[0] ? <EstablishmentEditor establishment={establishments.data[0]} /> : null}
-          {establishments.data?.[0] ? <HoursPanel establishmentId={establishments.data[0].id} /> : null}
-          {establishments.data?.[0] ? <FinancePanel establishmentId={establishments.data[0].id} /> : null}
-          {establishments.data?.[0] ? <ServicePanel establishmentId={establishments.data[0].id} /> : null}
-          {establishments.data?.[0] ? <TablesPanel establishmentId={establishments.data[0].id} /> : null}
-          {establishments.data?.[0] ? <CouponsPanel establishmentId={establishments.data[0].id} /> : null}
-          {establishments.data?.[0] ? <TeamPanel establishmentId={establishments.data[0].id} /> : null}
+          {establishments.data?.[0] ? (
+            <EstablishmentEditor establishment={establishments.data[0]} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <HoursPanel establishmentId={establishments.data[0].id} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <FinancePanel establishmentId={establishments.data[0].id} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <ServicePanel establishmentId={establishments.data[0].id} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <TablesPanel establishmentId={establishments.data[0].id} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <CouponsPanel establishmentId={establishments.data[0].id} />
+          ) : null}
+          {establishments.data?.[0] ? (
+            <TeamPanel establishmentId={establishments.data[0].id} />
+          ) : null}
         </>
       )}
     </Screen>
@@ -168,15 +205,17 @@ function CreateRestaurantCard({
 }) {
   return (
     <View style={styles.card}>
-      <AppText variant="muted">{t('manage.createLead')}</AppText>
+      <AppText variant="muted">{t("manage.createLead")}</AppText>
       <RestaurantPlaceForm control={form.control} setValue={form.setValue} />
       {creating.isError ? (
         <AppText color={tokens.color.feedback.error}>
-          {creating.error instanceof ApiError ? creating.error.problem.detail : t('errors.generic')}
+          {creating.error instanceof ApiError
+            ? creating.error.problem.detail
+            : t("errors.generic")}
         </AppText>
       ) : null}
       <Button
-        label={t('manage.createRestaurant')}
+        label={t("manage.createRestaurant")}
         loading={creating.isPending}
         onPress={form.handleSubmit((values) => creating.mutate(values))}
       />
@@ -196,31 +235,35 @@ const placeSchema = z.object({
 
 type PlaceValues = z.infer<typeof placeSchema>;
 
-function EstablishmentEditor({ establishment }: { establishment: Establishment }) {
+function EstablishmentEditor({
+  establishment,
+}: {
+  establishment: Establishment;
+}) {
   const queryClient = useQueryClient();
   const [cover, setCover] = useState<UploadAsset>();
   const form = useForm<PlaceValues>({
     resolver: zodResolver(placeSchema),
     defaultValues: {
       name: establishment.name,
-      description: establishment.description ?? '',
-      phone: establishment.phoneE164 ?? '',
+      description: establishment.description ?? "",
+      phone: establishment.phoneE164 ?? "",
       city: establishment.city,
-      district: establishment.district ?? '',
-      addressLine: establishment.addressLine ?? '',
-      landmarkText: establishment.landmarkText ?? '',
+      district: establishment.district ?? "",
+      addressLine: establishment.addressLine ?? "",
+      landmarkText: establishment.landmarkText ?? "",
     },
   });
 
   useEffect(() => {
     form.reset({
       name: establishment.name,
-      description: establishment.description ?? '',
-      phone: establishment.phoneE164 ?? '',
+      description: establishment.description ?? "",
+      phone: establishment.phoneE164 ?? "",
       city: establishment.city,
-      district: establishment.district ?? '',
-      addressLine: establishment.addressLine ?? '',
-      landmarkText: establishment.landmarkText ?? '',
+      district: establishment.district ?? "",
+      addressLine: establishment.addressLine ?? "",
+      landmarkText: establishment.landmarkText ?? "",
     });
   }, [establishment, form]);
 
@@ -239,28 +282,49 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
     },
     onSuccess: () => {
       hapticSuccess();
-      void queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] });
+      void queryClient.invalidateQueries({
+        queryKey: ["merchant", "establishments"],
+      });
     },
   });
 
   const quickAction = useMutation({
     mutationFn: (action: () => Promise<unknown>) => action(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['merchant', 'establishments'] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["merchant", "establishments"],
+      }),
   });
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">{t('manage.editPlace')}</AppText>
-      <ImagePickerField label={t('manage.mainPhoto')} currentUrl={establishment.coverImageUrl} value={cover} onChange={setCover} />
+      <AppText variant="subtitle">{t("manage.editPlace")}</AppText>
+      <ImagePickerField
+        label={t("manage.mainPhoto")}
+        currentUrl={establishment.coverImageUrl}
+        value={cover}
+        onChange={setCover}
+      />
       <Controller
         control={form.control}
         name="name"
-        render={({ field }) => <TextField label={t('manage.placeName')} value={field.value} onChangeText={field.onChange} />}
+        render={({ field }) => (
+          <TextField
+            label={t("manage.placeName")}
+            value={field.value}
+            onChangeText={field.onChange}
+          />
+        )}
       />
       <Controller
         control={form.control}
         name="description"
         render={({ field }) => (
-          <TextField label={t('manage.description')} value={field.value ?? ''} onChangeText={field.onChange} multiline />
+          <TextField
+            label={t("manage.description")}
+            value={field.value ?? ""}
+            onChangeText={field.onChange}
+            multiline
+          />
         )}
       />
       <Controller
@@ -268,9 +332,9 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
         name="phone"
         render={({ field }) => (
           <TextField
-            label={t('manage.phone')}
+            label={t("manage.phone")}
             keyboardType="phone-pad"
-            value={field.value ?? ''}
+            value={field.value ?? ""}
             onChangeText={field.onChange}
           />
         )}
@@ -278,71 +342,118 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
       <Controller
         control={form.control}
         name="city"
-        render={({ field }) => <TextField label={t('manage.city')} value={field.value} onChangeText={field.onChange} />}
+        render={({ field }) => (
+          <TextField
+            label={t("manage.city")}
+            value={field.value}
+            onChangeText={field.onChange}
+          />
+        )}
       />
       <Controller
         control={form.control}
         name="district"
         render={({ field }) => (
-          <TextField label={t('manage.district')} value={field.value ?? ''} onChangeText={field.onChange} />
+          <TextField
+            label={t("manage.district")}
+            value={field.value ?? ""}
+            onChangeText={field.onChange}
+          />
         )}
       />
       <Controller
         control={form.control}
         name="addressLine"
         render={({ field }) => (
-          <TextField label={t('manage.address')} value={field.value ?? ''} onChangeText={field.onChange} />
+          <TextField
+            label={t("manage.address")}
+            value={field.value ?? ""}
+            onChangeText={field.onChange}
+          />
         )}
       />
       <Controller
         control={form.control}
         name="landmarkText"
         render={({ field }) => (
-          <TextField label={t('manage.landmark')} value={field.value ?? ''} onChangeText={field.onChange} />
+          <TextField
+            label={t("manage.landmark")}
+            value={field.value ?? ""}
+            onChangeText={field.onChange}
+          />
         )}
       />
       {save.isError ? (
         <AppText color={tokens.color.feedback.error}>
-          {save.error instanceof ApiError ? save.error.problem.detail : t('errors.generic')}
+          {save.error instanceof ApiError
+            ? save.error.problem.detail
+            : t("errors.generic")}
         </AppText>
       ) : null}
-      {save.isSuccess ? <AppText color={tokens.color.brand.primary}>{t('manage.saved')}</AppText> : null}
-      <Button label={t('common.save')} loading={save.isPending} onPress={form.handleSubmit((values) => save.mutate(values))} />
-      <AppText variant="subtitle">{t('manage.amenities')}</AppText>
-      {quickAction.error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>
-        {quickAction.error instanceof ApiError ? quickAction.error.problem.detail : t('errors.generic')}
-      </AppText> : null}
+      {save.isSuccess ? (
+        <AppText color={tokens.color.brand.primary}>
+          {t("manage.saved")}
+        </AppText>
+      ) : null}
+      <Button
+        label={t("common.save")}
+        loading={save.isPending}
+        onPress={form.handleSubmit((values) => save.mutate(values))}
+      />
+      <AppText variant="subtitle">{t("manage.amenities")}</AppText>
+      {quickAction.error ? (
+        <AppText
+          accessibilityLiveRegion="polite"
+          color={tokens.color.feedback.error}
+        >
+          {quickAction.error instanceof ApiError
+            ? quickAction.error.problem.detail
+            : t("errors.generic")}
+        </AppText>
+      ) : null}
       <View style={styles.row}>
         <AmenityToggle
-          label={t('manage.terrace')}
+          label={t("manage.terrace")}
           value={Boolean(establishment.hasTerrace)}
           disabled={quickAction.isPending}
           onToggle={() =>
-            quickAction.mutate(() => updateEstablishment(establishment.id, { hasTerrace: !establishment.hasTerrace }))
+            quickAction.mutate(() =>
+              updateEstablishment(establishment.id, {
+                hasTerrace: !establishment.hasTerrace,
+              }),
+            )
           }
         />
         <AmenityToggle
-          label={t('manage.ac')}
+          label={t("manage.ac")}
           value={Boolean(establishment.hasAirConditioning)}
           disabled={quickAction.isPending}
           onToggle={() =>
-            quickAction.mutate(() => updateEstablishment(establishment.id, { hasAirConditioning: !establishment.hasAirConditioning }))
+            quickAction.mutate(() =>
+              updateEstablishment(establishment.id, {
+                hasAirConditioning: !establishment.hasAirConditioning,
+              }),
+            )
           }
         />
         <AmenityToggle
-          label={t('manage.accessible')}
+          label={t("manage.accessible")}
           value={Boolean(establishment.accessible)}
           disabled={quickAction.isPending}
           onToggle={() =>
-            quickAction.mutate(() => updateEstablishment(establishment.id, { accessible: !establishment.accessible }))
+            quickAction.mutate(() =>
+              updateEstablishment(establishment.id, {
+                accessible: !establishment.accessible,
+              }),
+            )
           }
         />
       </View>
       {establishment.verifiedAt ? (
-        <AppText variant="muted">{t('manage.verified')}</AppText>
+        <AppText variant="muted">{t("manage.verified")}</AppText>
       ) : (
         <Button
-          label={t('manage.requestVerification')}
+          label={t("manage.requestVerification")}
           disabled={quickAction.isPending}
           variant="outline"
           onPress={() =>
@@ -350,11 +461,11 @@ function EstablishmentEditor({ establishment }: { establishment: Establishment }
           }
         />
       )}
-      {establishment.status === 'PUBLISHED' ? (
-        <AppText variant="muted">{t('manage.published')}</AppText>
+      {establishment.status === "PUBLISHED" ? (
+        <AppText variant="muted">{t("manage.published")}</AppText>
       ) : (
         <Button
-          label={t('manage.publish')}
+          label={t("manage.publish")}
           disabled={quickAction.isPending}
           variant="ghost"
           onPress={() =>
@@ -386,14 +497,18 @@ function AmenityToggle({
       onPress={onToggle}
       style={[styles.chip, value ? styles.chipOn : null]}
     >
-      <AppText color={value ? tokens.color.brand.primary : tokens.color.text.muted}>{label}</AppText>
+      <AppText
+        color={value ? tokens.color.brand.primary : tokens.color.text.muted}
+      >
+        {label}
+      </AppText>
     </Pressable>
   );
 }
 
 function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const entitlements = useQuery({
-    queryKey: ['merchant', 'entitlements'],
+    queryKey: ["merchant", "entitlements"],
     queryFn: () => fetchEntitlements(),
   });
   const enabled = entitlements.data?.enabledModules ?? [];
@@ -403,30 +518,49 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   const hasReviews = hasModule(enabled, MODULE_CODES.STOREFRONT_BASIC);
   const hasMarketing = hasModule(enabled, MODULE_CODES.MARKETING_PROMOTIONS);
 
-
-  if (!ready || (!hasReservations && !hasDelivery && !hasReviews && !hasMarketing)) {
+  if (
+    !ready ||
+    (!hasReservations && !hasDelivery && !hasReviews && !hasMarketing)
+  ) {
     return null;
   }
 
   return (
     <CompletionCard>
-      <SectionHeading title={t('service.title')} />
-      {hasReservations ? <View style={styles.serviceSection}><ReservationPanel establishmentId={establishmentId} /></View> : null}
-      {hasDelivery ? <View style={styles.serviceSection}><DeliveryPanel establishmentId={establishmentId} /></View> : null}
-      {hasReviews ? <View style={styles.serviceSection}><ReviewPanel establishmentId={establishmentId} /></View> : null}
-      {hasMarketing ? <View style={styles.serviceSection}><EventsPanel establishmentId={establishmentId} /></View> : null}
+      <SectionHeading title={t("service.title")} />
+      {hasReservations ? (
+        <View style={styles.serviceSection}>
+          <ReservationPanel establishmentId={establishmentId} />
+        </View>
+      ) : null}
+      {hasDelivery ? (
+        <View style={styles.serviceSection}>
+          <DeliveryPanel establishmentId={establishmentId} />
+        </View>
+      ) : null}
+      {hasReviews ? (
+        <View style={styles.serviceSection}>
+          <ReviewPanel establishmentId={establishmentId} />
+        </View>
+      ) : null}
+      {hasMarketing ? (
+        <View style={styles.serviceSection}>
+          <EventsPanel establishmentId={establishmentId} />
+          <CampaignsPanel establishmentId={establishmentId} />
+        </View>
+      ) : null}
     </CompletionCard>
   );
 }
 
 const HOUR_DAY_LABELS: Record<WeekDay, string> = {
-  MONDAY: 'Lun',
-  TUESDAY: 'Mar',
-  WEDNESDAY: 'Mer',
-  THURSDAY: 'Jeu',
-  FRIDAY: 'Ven',
-  SATURDAY: 'Sam',
-  SUNDAY: 'Dim',
+  MONDAY: "Lun",
+  TUESDAY: "Mar",
+  WEDNESDAY: "Mer",
+  THURSDAY: "Jeu",
+  FRIDAY: "Ven",
+  SATURDAY: "Sam",
+  SUNDAY: "Dim",
 };
 
 function emptyWeekDays(): Record<WeekDay, boolean> {
@@ -443,11 +577,12 @@ function emptyWeekDays(): Record<WeekDay, boolean> {
 
 function HoursPanel({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
-  const [opensAt, setOpensAt] = useState('');
-  const [closesAt, setClosesAt] = useState('');
-  const [weekDays, setWeekDays] = useState<Record<WeekDay, boolean>>(emptyWeekDays);
+  const [opensAt, setOpensAt] = useState("");
+  const [closesAt, setClosesAt] = useState("");
+  const [weekDays, setWeekDays] =
+    useState<Record<WeekDay, boolean>>(emptyWeekDays);
   const hours = useQuery({
-    queryKey: ['merchant', 'hours', establishmentId],
+    queryKey: ["merchant", "hours", establishmentId],
     queryFn: () => fetchHours(establishmentId),
   });
 
@@ -474,7 +609,7 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
     mutationFn: () => {
       const selected = WEEK_DAYS.filter((weekDay) => weekDays[weekDay]);
       if (selected.length === 0) {
-        throw new Error(t('manage.hoursNeedDay'));
+        throw new Error(t("manage.hoursNeedDay"));
       }
       let opensAtMinutes = parseClockMinutes(opensAt);
       let closesAtMinutes = parseClockMinutes(closesAt);
@@ -483,24 +618,38 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
       }
       return saveHours(
         establishmentId,
-        selected.map((weekDay) => ({ weekDay, opensAtMinutes, closesAtMinutes })),
+        selected.map((weekDay) => ({
+          weekDay,
+          opensAtMinutes,
+          closesAtMinutes,
+        })),
       );
     },
     onSuccess: () => {
       hapticSuccess();
-      void queryClient.invalidateQueries({ queryKey: ['merchant', 'hours'] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant", "hours"] });
     },
   });
 
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">{t('manage.hours')}</AppText>
+      <AppText variant="subtitle">{t("manage.hours")}</AppText>
       <View style={styles.row}>
         <View style={styles.grow}>
-          <TextField label={t('manage.opensAt')} value={opensAt} onChangeText={setOpensAt} placeholder={t('manage.hoursPlaceholder')} />
+          <TextField
+            label={t("manage.opensAt")}
+            value={opensAt}
+            onChangeText={setOpensAt}
+            placeholder={t("manage.hoursPlaceholder")}
+          />
         </View>
         <View style={styles.grow}>
-          <TextField label={t('manage.closesAt')} value={closesAt} onChangeText={setClosesAt} placeholder={t('manage.hoursPlaceholder')} />
+          <TextField
+            label={t("manage.closesAt")}
+            value={closesAt}
+            onChangeText={setClosesAt}
+            placeholder={t("manage.hoursPlaceholder")}
+          />
         </View>
       </View>
       <View style={styles.row}>
@@ -510,38 +659,66 @@ function HoursPanel({ establishmentId }: { establishmentId: string }) {
             accessibilityRole="button"
             accessibilityLabel={HOUR_DAY_LABELS[weekDay]}
             accessibilityState={{ selected: weekDays[weekDay] }}
-            onPress={() => setWeekDays((current) => ({ ...current, [weekDay]: !current[weekDay] }))}
+            onPress={() =>
+              setWeekDays((current) => ({
+                ...current,
+                [weekDay]: !current[weekDay],
+              }))
+            }
             style={[styles.chip, weekDays[weekDay] ? styles.chipOn : null]}
           >
-            <AppText color={weekDays[weekDay] ? tokens.color.brand.primary : tokens.color.text.muted}>
+            <AppText
+              color={
+                weekDays[weekDay]
+                  ? tokens.color.brand.primary
+                  : tokens.color.text.muted
+              }
+            >
               {HOUR_DAY_LABELS[weekDay]}
             </AppText>
           </Pressable>
         ))}
       </View>
       {save.error ? (
-        <AppText color={tokens.color.feedback.error}>{save.error instanceof Error ? save.error.message : t('errors.generic')}</AppText>
+        <AppText color={tokens.color.feedback.error}>
+          {save.error instanceof Error
+            ? save.error.message
+            : t("errors.generic")}
+        </AppText>
       ) : null}
-      <Button label={t('manage.saveHours')} variant="outline" loading={save.isPending} onPress={() => save.mutate()} />
+      <Button
+        label={t("manage.saveHours")}
+        variant="outline"
+        loading={save.isPending}
+        onPress={() => save.mutate()}
+      />
     </View>
   );
 }
 
 function TablesPanel({ establishmentId }: { establishmentId: string }) {
-  const entitlements = useQuery({ queryKey: ['merchant', 'entitlements'], queryFn: () => fetchEntitlements() });
-  const enabled = hasModule(entitlements.data?.enabledModules, MODULE_CODES.RESERVATIONS_TABLES);
+  const entitlements = useQuery({
+    queryKey: ["merchant", "entitlements"],
+    queryFn: () => fetchEntitlements(),
+  });
+  const enabled = hasModule(
+    entitlements.data?.enabledModules,
+    MODULE_CODES.RESERVATIONS_TABLES,
+  );
   const queryClient = useQueryClient();
-  const [name, setName] = useState('');
-  const [seats, setSeats] = useState('');
+  const [name, setName] = useState("");
+  const [seats, setSeats] = useState("");
   const create = useMutation({
     mutationFn: () => createTable(establishmentId, name.trim(), Number(seats)),
     onSuccess: async () => {
-      setName(''); setSeats(''); hapticSuccess();
-      await queryClient.invalidateQueries({ queryKey: ['merchant', 'tables'] });
+      setName("");
+      setSeats("");
+      hapticSuccess();
+      await queryClient.invalidateQueries({ queryKey: ["merchant", "tables"] });
     },
   });
   const tables = useQuery({
-    queryKey: ['merchant', 'tables', establishmentId],
+    queryKey: ["merchant", "tables", establishmentId],
     queryFn: () => fetchTables(establishmentId),
     enabled,
   });
@@ -550,20 +727,49 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
   }
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">{t('manage.floorPlan')}</AppText>
-      {tables.error ? <ErrorState onRetry={() => void tables.refetch()} /> : null}
+      <AppText variant="subtitle">{t("manage.floorPlan")}</AppText>
+      {tables.error ? (
+        <ErrorState onRetry={() => void tables.refetch()} />
+      ) : null}
       {tables.data?.map((table) => (
         <AppText key={table.id}>
-          {table.name} · {table.seats} {t('manage.seats')}
+          {table.name} · {table.seats} {t("manage.seats")}
         </AppText>
       ))}
-      <TextField label={t('manage.tableName')} value={name} onChangeText={setName} editable={!create.isPending} maxLength={80} />
-      <TextField label={t('manage.covers')} keyboardType="number-pad" value={seats} onChangeText={setSeats} editable={!create.isPending} maxLength={3} />
-      {create.error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{create.error instanceof ApiError ? create.error.problem.detail : t('errors.generic')}</AppText> : null}
+      <TextField
+        label={t("manage.tableName")}
+        value={name}
+        onChangeText={setName}
+        editable={!create.isPending}
+        maxLength={80}
+      />
+      <TextField
+        label={t("manage.covers")}
+        keyboardType="number-pad"
+        value={seats}
+        onChangeText={setSeats}
+        editable={!create.isPending}
+        maxLength={3}
+      />
+      {create.error ? (
+        <AppText
+          accessibilityLiveRegion="polite"
+          color={tokens.color.feedback.error}
+        >
+          {create.error instanceof ApiError
+            ? create.error.problem.detail
+            : t("errors.generic")}
+        </AppText>
+      ) : null}
       <Button
-        label={t('manage.addTable')}
+        label={t("manage.addTable")}
         variant="outline"
-        disabled={name.trim().length === 0 || !/^\d{1,3}$/.test(seats) || Number(seats) < 1 || Number(seats) > 100}
+        disabled={
+          name.trim().length === 0 ||
+          !/^\d{1,3}$/.test(seats) ||
+          Number(seats) < 1 ||
+          Number(seats) > 100
+        }
         loading={create.isPending}
         onPress={() => create.mutate()}
       />
@@ -573,36 +779,56 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
 
 function TeamPanel({ establishmentId }: { establishmentId: string }) {
   const queryClient = useQueryClient();
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('KITCHEN');
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("KITCHEN");
   const [error, setError] = useState<string | null>(null);
-  const members = useQuery({ queryKey: ['merchant', 'members'], queryFn: fetchMembers });
+  const members = useQuery({
+    queryKey: ["merchant", "members"],
+    queryFn: fetchMembers,
+  });
   const invite = useMutation({
-    mutationFn: () => inviteMember({ phone, roleCode: role, displayName: name.trim() || undefined, establishmentId }),
+    mutationFn: () =>
+      inviteMember({
+        phone,
+        roleCode: role,
+        displayName: name.trim() || undefined,
+        establishmentId,
+      }),
     onSuccess: () => {
-      setPhone('');
-      setName('');
+      setPhone("");
+      setName("");
       setError(null);
-      void queryClient.invalidateQueries({ queryKey: ['merchant', 'members'] });
+      void queryClient.invalidateQueries({ queryKey: ["merchant", "members"] });
     },
     onError: (err) => {
-      setError(err instanceof ApiError ? err.problem.detail : t('errors.generic'));
+      setError(
+        err instanceof ApiError ? err.problem.detail : t("errors.generic"),
+      );
     },
   });
 
   return (
     <View style={styles.card}>
-      <AppText variant="subtitle">{t('manage.team')}</AppText>
+      <AppText variant="subtitle">{t("manage.team")}</AppText>
       {members.data?.map((member) => (
         <AppText key={member.id}>
           {member.displayName ?? member.phoneE164} · {member.roleCode}
         </AppText>
       ))}
-      <TextField label={t('manage.memberName')} value={name} onChangeText={setName} />
-      <TextField label={t('manage.memberPhone')} keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+      <TextField
+        label={t("manage.memberName")}
+        value={name}
+        onChangeText={setName}
+      />
+      <TextField
+        label={t("manage.memberPhone")}
+        keyboardType="phone-pad"
+        value={phone}
+        onChangeText={setPhone}
+      />
       <View style={styles.row}>
-        {(['KITCHEN', 'CASHIER', 'WAITER'] as const).map((code) => (
+        {(["KITCHEN", "CASHIER", "WAITER"] as const).map((code) => (
           <Pressable
             key={code}
             accessibilityRole="button"
@@ -611,13 +837,23 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
             onPress={() => setRole(code)}
             style={[styles.chip, role === code ? styles.chipOn : null]}
           >
-            <AppText color={role === code ? tokens.color.brand.primary : tokens.color.text.muted}>{code}</AppText>
+            <AppText
+              color={
+                role === code
+                  ? tokens.color.brand.primary
+                  : tokens.color.text.muted
+              }
+            >
+              {code}
+            </AppText>
           </Pressable>
         ))}
       </View>
-      {error ? <AppText color={tokens.color.feedback.error}>{error}</AppText> : null}
+      {error ? (
+        <AppText color={tokens.color.feedback.error}>{error}</AppText>
+      ) : null}
       <Button
-        label={t('manage.inviteMember')}
+        label={t("manage.inviteMember")}
         variant="outline"
         loading={invite.isPending}
         disabled={phone.trim().length < 8}
@@ -646,14 +882,19 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: tokens.spacing.sm, flexWrap: 'wrap' },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.spacing.sm,
+    flexWrap: "wrap",
+  },
   chip: {
     minHeight: tokens.layout.minTouchTarget,
     paddingHorizontal: tokens.spacing.sm,
     borderRadius: tokens.radius.pill,
     borderWidth: 1,
     borderColor: tokens.color.border.default,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   chipOn: {
     backgroundColor: tokens.color.surface.mint,
@@ -664,8 +905,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: tokens.color.surface.mint,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   body: { flex: 1, gap: 2 },
   grow: { flex: 1, minWidth: 120 },

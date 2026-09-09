@@ -1,11 +1,12 @@
-import { kvDelete, kvGet, kvSet } from '@/store/kv-store';
+import { kvDelete, kvGet, kvSet } from "@/store/kv-store";
 
-const PREFIX = 'onmangeou.session.';
+const PREFIX = "onmangeou.session.";
 
 export const SESSION_KEYS = {
   accessToken: `${PREFIX}accessToken`,
   refreshToken: `${PREFIX}refreshToken`,
   sessionId: `${PREFIX}sessionId`,
+  sessionScope: `${PREFIX}sessionScope`,
   accessTokenExpiresAt: `${PREFIX}accessTokenExpiresAt`,
   refreshTokenExpiresAt: `${PREFIX}refreshTokenExpiresAt`,
   organizationId: `${PREFIX}organizationId`,
@@ -15,6 +16,7 @@ export interface StoredSession {
   accessToken: string;
   refreshToken: string;
   sessionId: string;
+  sessionScope?: string;
   accessTokenExpiresAt: string;
   refreshTokenExpiresAt: string;
   organizationId: string | null;
@@ -28,7 +30,13 @@ export async function readStoredSession(): Promise<StoredSession | null> {
   const refreshTokenExpiresAt = await kvGet(SESSION_KEYS.refreshTokenExpiresAt);
   const organizationId = await kvGet(SESSION_KEYS.organizationId);
 
-  if (!accessToken || !refreshToken || !sessionId || !accessTokenExpiresAt || !refreshTokenExpiresAt) {
+  if (
+    !accessToken ||
+    !refreshToken ||
+    !sessionId ||
+    !accessTokenExpiresAt ||
+    !refreshTokenExpiresAt
+  ) {
     return null;
   }
 
@@ -36,18 +44,28 @@ export async function readStoredSession(): Promise<StoredSession | null> {
     accessToken,
     refreshToken,
     sessionId,
+    sessionScope: (await kvGet(SESSION_KEYS.sessionScope)) ?? sessionId,
     accessTokenExpiresAt,
     refreshTokenExpiresAt,
     organizationId,
   };
 }
 
-export async function writeStoredSession(session: StoredSession): Promise<void> {
+export async function writeStoredSession(
+  session: StoredSession,
+): Promise<void> {
   await kvSet(SESSION_KEYS.accessToken, session.accessToken);
   await kvSet(SESSION_KEYS.refreshToken, session.refreshToken);
   await kvSet(SESSION_KEYS.sessionId, session.sessionId);
+  await kvSet(
+    SESSION_KEYS.sessionScope,
+    session.sessionScope ?? session.sessionId,
+  );
   await kvSet(SESSION_KEYS.accessTokenExpiresAt, session.accessTokenExpiresAt);
-  await kvSet(SESSION_KEYS.refreshTokenExpiresAt, session.refreshTokenExpiresAt);
+  await kvSet(
+    SESSION_KEYS.refreshTokenExpiresAt,
+    session.refreshTokenExpiresAt,
+  );
   if (session.organizationId) {
     await kvSet(SESSION_KEYS.organizationId, session.organizationId);
   } else {

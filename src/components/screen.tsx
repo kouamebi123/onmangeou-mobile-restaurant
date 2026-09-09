@@ -1,9 +1,17 @@
-import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View, type ScrollViewProps } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { QueuePanel } from "@/offline/queue-panel";
+import type { ReactNode } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { OfflineBanner } from '@/components/offline-banner';
-import { tokens } from '@/theme';
+import { OfflineBanner } from "@/components/offline-banner";
+import { tokens } from "@/theme";
 
 interface ScreenProps extends ScrollViewProps {
   children: ReactNode;
@@ -12,9 +20,13 @@ interface ScreenProps extends ScrollViewProps {
 
 export function Screen({ children, scroll = true, ...rest }: ScreenProps) {
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <OfflineBanner />
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <QueuePanel compact />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         {scroll ? (
           <ScrollView
             contentContainerStyle={styles.content}

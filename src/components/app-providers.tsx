@@ -1,29 +1,41 @@
-import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { OfflineSync } from "@/offline/queue-panel";
+import {
+  focusManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import {
   Inter_400Regular,
   Inter_600SemiBold,
   Inter_700Bold,
   useFonts,
-} from '@expo-google-fonts/inter';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, AppState, Platform, StyleSheet, View } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+} from "@expo-google-fonts/inter";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import {
+  ActivityIndicator,
+  AppState,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
+import * as SplashScreen from "expo-splash-screen";
 
-import { BrandIntro } from '@/components/brand-intro';
-import { ProfileOnboarding } from '@/components/profile-onboarding';
-import { kvGet, kvSet } from '@/store/kv-store';
-import { tokens } from '@/theme';
-import { useAuthStore } from '@/store/auth-store';
-import { PushSettings } from '@/features/notifications/push-settings';
+import { BrandIntro } from "@/components/brand-intro";
+import { ProfileOnboarding } from "@/components/profile-onboarding";
+import { kvGet, kvSet } from "@/store/kv-store";
+import { tokens } from "@/theme";
+import { useAuthStore } from "@/store/auth-store";
+import { PushSettings } from "@/features/notifications/push-settings";
 
 void SplashScreen.preventAutoHideAsync();
 
-const INTRO_KEY = 'onmangeou.restaurant.intro.seen.v2';
+const INTRO_KEY = "onmangeou.restaurant.intro.seen.v2";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
+      networkMode: "always",
       staleTime: 30_000,
     },
   },
@@ -36,12 +48,19 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => {
     const unsubscribe = useAuthStore.subscribe((next, previous) => {
-      if (next.sessionScope !== previous.sessionScope || next.organizationId !== previous.organizationId) queryClient.clear();
+      if (
+        next.sessionScope !== previous.sessionScope ||
+        next.organizationId !== previous.organizationId
+      )
+        queryClient.clear();
     });
-    const appState = AppState.addEventListener('change', (status) => {
-      if (Platform.OS !== 'web') focusManager.setFocused(status === 'active');
+    const appState = AppState.addEventListener("change", (status) => {
+      if (Platform.OS !== "web") focusManager.setFocused(status === "active");
     });
-    return () => { unsubscribe(); appState.remove(); };
+    return () => {
+      unsubscribe();
+      appState.remove();
+    };
   }, []);
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
@@ -50,7 +69,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   });
   const hydrate = useAuthStore((state) => state.hydrate);
   const hydrated = useAuthStore((state) => state.hydrated);
-  const [intro, setIntro] = useState<'loading' | 'play' | 'done'>('loading');
+  const [intro, setIntro] = useState<"loading" | "play" | "done">("loading");
 
   useEffect(() => {
     void hydrate();
@@ -58,22 +77,22 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   useEffect(() => {
     void kvGet(INTRO_KEY).then((seen) => {
-      setIntro(seen === '1' ? 'done' : 'play');
+      setIntro(seen === "1" ? "done" : "play");
     });
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded && hydrated && intro !== 'loading') {
+    if (fontsLoaded && hydrated && intro !== "loading") {
       void SplashScreen.hideAsync();
     }
   }, [fontsLoaded, hydrated, intro]);
 
   const finishIntro = useCallback(() => {
-    void kvSet(INTRO_KEY, '1');
-    setIntro('done');
+    void kvSet(INTRO_KEY, "1");
+    setIntro("done");
   }, []);
 
-  if (!fontsLoaded || !hydrated || intro === 'loading') {
+  if (!fontsLoaded || !hydrated || intro === "loading") {
     return (
       <View style={styles.boot}>
         <ActivityIndicator color={tokens.color.brand.primary} />
@@ -84,9 +103,10 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <PushSettings headless />
+      <OfflineSync />
       <View style={styles.shell}>
         <ProfileOnboarding>{children}</ProfileOnboarding>
-        {intro === 'play' ? <BrandIntro onDone={finishIntro} /> : null}
+        {intro === "play" ? <BrandIntro onDone={finishIntro} /> : null}
       </View>
     </QueryClientProvider>
   );
@@ -95,8 +115,8 @@ export function AppProviders({ children }: AppProvidersProps) {
 const styles = StyleSheet.create({
   boot: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: tokens.color.brand.deep,
   },
   shell: { flex: 1 },

@@ -1,40 +1,44 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { QueuePanel } from "@/offline/queue-panel";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-import { fetchMe, logout, updateMe } from '@/api/auth';
-import { fetchEntitlements } from '@/api/merchant';
-import { ApiError } from '@/api/envelope';
-import { AppText } from '@/components/app-text';
-import { Button } from '@/components/button';
-import { PageHero } from '@/components/page-hero';
-import { Screen } from '@/components/screen';
-import { TextField } from '@/components/text-field';
-import { hapticSuccess } from '@/feedback/haptics';
-import { t } from '@/i18n';
-import { useAuthStore } from '@/store/auth-store';
-import { tokens } from '@/theme';
-import { PushSettings } from '@/features/notifications/push-settings';
-import { Image } from 'expo-image';
-import { ImagePickerField } from '@/components/image-picker-field';
-import type { UploadAsset } from '@/api/client';
-import { uploadAvatar } from '@/api/merchant';
+import { fetchMe, logout, updateMe } from "@/api/auth";
+import { fetchEntitlements } from "@/api/merchant";
+import { ApiError } from "@/api/envelope";
+import { AppText } from "@/components/app-text";
+import { Button } from "@/components/button";
+import { PageHero } from "@/components/page-hero";
+import { Screen } from "@/components/screen";
+import { TextField } from "@/components/text-field";
+import { hapticSuccess } from "@/feedback/haptics";
+import { t } from "@/i18n";
+import { useAuthStore } from "@/store/auth-store";
+import { tokens } from "@/theme";
+import { PushSettings } from "@/features/notifications/push-settings";
+import { Image } from "expo-image";
+import { ImagePickerField } from "@/components/image-picker-field";
+import type { UploadAsset } from "@/api/client";
+import { uploadAvatar } from "@/api/merchant";
 
 export function MoreScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const clear = useAuthStore((state) => state.clear);
-  const me = useQuery({ queryKey: ['me'], queryFn: fetchMe });
-  const entitlements = useQuery({ queryKey: ['merchant', 'entitlements'], queryFn: () => fetchEntitlements() });
-  const [fullName, setFullName] = useState('');
+  const me = useQuery({ queryKey: ["me"], queryFn: fetchMe });
+  const entitlements = useQuery({
+    queryKey: ["merchant", "entitlements"],
+    queryFn: () => fetchEntitlements(),
+  });
+  const [fullName, setFullName] = useState("");
   const [avatar, setAvatar] = useState<UploadAsset>();
   const signOut = useMutation({
     mutationFn: logout,
     onSettled: async () => {
       await clear();
-      router.replace('/');
+      router.replace("/");
     },
   });
 
@@ -44,9 +48,15 @@ export function MoreScreen() {
     }
   }, [me.data?.fullName]);
 
-  const displayName = me.data?.fullName?.trim() || t('more.title');
-  const phone = me.data?.phoneE164 ?? '—';
-  const initial = (me.data?.fullName?.trim() || phone.replace(/\D/g, '').slice(-1) || 'R').slice(0, 1).toUpperCase();
+  const displayName = me.data?.fullName?.trim() || t("more.title");
+  const phone = me.data?.phoneE164 ?? "—";
+  const initial = (
+    me.data?.fullName?.trim() ||
+    phone.replace(/\D/g, "").slice(-1) ||
+    "R"
+  )
+    .slice(0, 1)
+    .toUpperCase();
   const activeCount = entitlements.data?.enabledModules.length ?? 0;
 
   const saveProfile = useMutation({
@@ -56,36 +66,61 @@ export function MoreScreen() {
     },
     onSuccess: () => {
       hapticSuccess();
-      void queryClient.invalidateQueries({ queryKey: ['me'] });
+      void queryClient.invalidateQueries({ queryKey: ["me"] });
     },
   });
 
   return (
     <Screen>
+      <QueuePanel />
       <PageHero
         icon="person"
         hideIcon
-        kicker={t('app.name')}
+        kicker={t("app.name")}
         title={displayName}
-        subtitle={phone === '—' ? t('more.hero') : phone}
+        subtitle={phone === "—" ? t("more.hero") : phone}
       >
         <View style={styles.avatar}>
-          {me.data?.avatarUrl ? <Image source={{ uri: me.data.avatarUrl }} contentFit="cover" style={styles.avatarImage} /> : <AppText color={tokens.color.brand.deep} style={styles.avatarLetter}>{initial}</AppText>}
+          {me.data?.avatarUrl ? (
+            <Image
+              source={{ uri: me.data.avatarUrl }}
+              contentFit="cover"
+              style={styles.avatarImage}
+            />
+          ) : (
+            <AppText
+              color={tokens.color.brand.deep}
+              style={styles.avatarLetter}
+            >
+              {initial}
+            </AppText>
+          )}
         </View>
       </PageHero>
 
       <View style={styles.card}>
-        <InfoLine icon="call-outline" label={t('more.phone')} value={phone} />
+        <InfoLine icon="call-outline" label={t("more.phone")} value={phone} />
         <View style={styles.divider} />
-        <TextField label={t('more.editProfile')} value={fullName} onChangeText={setFullName} />
-        <ImagePickerField label={t('more.profilePhoto')} currentUrl={me.data?.avatarUrl} value={avatar} onChange={setAvatar} />
+        <TextField
+          label={t("more.editProfile")}
+          value={fullName}
+          onChangeText={setFullName}
+        />
+        <ImagePickerField
+          label={t("more.profilePhoto")}
+          currentUrl={me.data?.avatarUrl}
+          value={avatar}
+          onChange={setAvatar}
+        />
         {saveProfile.isError ? (
           <AppText color={tokens.color.feedback.error}>
-            {saveProfile.error instanceof ApiError ? saveProfile.error.problem.detail : t('errors.generic')}
+            {saveProfile.error instanceof ApiError
+              ? saveProfile.error.problem.detail
+              : t("errors.generic")}
           </AppText>
         ) : null}
         <Button
-          label={t('more.saveProfile')}
+          label={t("more.saveProfile")}
           variant="outline"
           loading={saveProfile.isPending}
           onPress={() => saveProfile.mutate()}
@@ -94,32 +129,40 @@ export function MoreScreen() {
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={t('more.editPlan')}
-        onPress={() => router.push('/(merchant)/plan')}
+        accessibilityLabel={t("more.editPlan")}
+        onPress={() => router.push("/(merchant)/plan")}
         style={styles.plan}
       >
         <View style={styles.mark}>
-          <Ionicons name="diamond-outline" size={18} color={tokens.color.brand.accent} />
+          <Ionicons
+            name="diamond-outline"
+            size={18}
+            color={tokens.color.brand.accent}
+          />
         </View>
         <View style={styles.planBody}>
           <AppText variant="caption" color={tokens.color.brand.accent}>
-            {entitlements.data?.planCode ?? t('plan.custom')}
+            {entitlements.data?.planCode ?? t("plan.custom")}
           </AppText>
           <AppText variant="subtitle" color={tokens.color.text.onBrand}>
-            {t('more.editPlan')}
+            {t("more.editPlan")}
           </AppText>
           <AppText variant="muted" color={tokens.color.surface.mint}>
             {entitlements.data?.monthlyQuote
-              ? `${entitlements.data.monthlyQuote.formatted} / mois · ${t('more.planDetail', { count: String(activeCount) })}`
-              : t('more.planDetail', { count: String(activeCount) })}
+              ? `${entitlements.data.monthlyQuote.formatted} / mois · ${t("more.planDetail", { count: String(activeCount) })}`
+              : t("more.planDetail", { count: String(activeCount) })}
           </AppText>
         </View>
-        <Ionicons name="chevron-forward" size={18} color={tokens.color.surface.mint} />
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color={tokens.color.surface.mint}
+        />
       </Pressable>
 
       <PushSettings />
       <Button
-        label={t('common.signOut')}
+        label={t("common.signOut")}
         variant="destructive"
         loading={signOut.isPending}
         onPress={() => signOut.mutate()}
@@ -128,7 +171,15 @@ export function MoreScreen() {
   );
 }
 
-function InfoLine({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+function InfoLine({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
   return (
     <View style={styles.info}>
       <View style={styles.mark}>
@@ -148,8 +199,8 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: tokens.color.surface.white,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: tokens.spacing.xxs,
   },
   avatarLetter: { fontFamily: tokens.typography.family.bold, fontSize: 22 },
@@ -167,15 +218,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   plan: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: tokens.spacing.sm,
     padding: tokens.spacing.md,
     backgroundColor: tokens.color.brand.deep,
     borderRadius: tokens.radius.card,
   },
   planBody: { flex: 1, gap: 2 },
-  info: { flexDirection: 'row', alignItems: 'center', gap: tokens.spacing.sm },
+  info: { flexDirection: "row", alignItems: "center", gap: tokens.spacing.sm },
   infoBody: { flex: 1, gap: 2 },
   divider: { height: 1, backgroundColor: tokens.color.border.default },
   mark: {
@@ -183,7 +234,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: tokens.color.surface.mint,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
