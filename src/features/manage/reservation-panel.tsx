@@ -9,7 +9,7 @@ import { t } from '@/i18n';
 import { tokens } from '@/theme';
 
 const transitions: Record<string, string[]> = {
-  REQUESTED: ['CONFIRMED', 'REJECTED'],
+  REQUESTED: ['CONFIRMED', 'REJECTED', 'CANCELLED'],
   CONFIRMED: ['SEATED', 'CANCELLED', 'NO_SHOW'],
   SEATED: ['COMPLETED'],
 };
@@ -34,7 +34,11 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
   const items = view === 'history' ? history.data?.pages.flatMap((page) => page.data) : reservations.data;
   const change = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => changeReservationStatus(id, status),
-    onSettled: () => { void client.invalidateQueries({ queryKey: ['merchant', 'reservations'] }); },
+    onSettled: () => {
+      // Always reload the server state. This prevents stale buttons from remaining
+      // visible after another terminal has already changed the reservation.
+      void client.invalidateQueries({ queryKey: ['merchant', 'reservations'] });
+    },
   });
   return <View style={{ gap: tokens.spacing.sm }}>
     <AppText variant="subtitle">{t('service.reservations')}</AppText>
@@ -48,7 +52,7 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
     {listing.isPending ? <AppText>{t('reservation.loading')}</AppText> : null}
     {listing.isError ? <AppText selectable color={tokens.color.feedback.error}>{t('reservation.error')}</AppText> : null}
     {listing.isSuccess && !items?.length ? <AppText>{t(view === 'history' ? 'reservation.historyEmpty' : 'service.noReservations')}</AppText> : null}
-    {change.isError ? <AppText color={tokens.color.feedback.error}>
+    {change.isError ? <AppText selectable color={tokens.color.feedback.error}>
       {change.error instanceof ApiError ? change.error.problem.detail : t('reservation.error')}
     </AppText> : null}
     {items?.map((item) => <View key={item.id} style={{ backgroundColor: tokens.color.surface.white, padding: tokens.spacing.sm, gap: tokens.spacing.xs, borderWidth: 1, borderColor: tokens.color.border.default, borderRadius: tokens.radius.card }}>
