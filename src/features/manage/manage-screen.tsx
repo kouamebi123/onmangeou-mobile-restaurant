@@ -61,6 +61,11 @@ import { ImagePickerField } from "@/components/image-picker-field";
 import type { UploadAsset } from "@/api/client";
 import { uploadEstablishmentCover } from "@/api/merchant";
 
+function roleLabel(code: string): string {
+  const label = t(`manage.roles.${code}`);
+  return label === `manage.roles.${code}` ? code : label;
+}
+
 const MANAGE_SECTIONS = ["storefront", "service", "finance", "team"] as const;
 type ManageSection = (typeof MANAGE_SECTIONS)[number];
 
@@ -201,6 +206,7 @@ export function ManageScreen() {
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
+                style={styles.sectionTabsScroll}
                 contentContainerStyle={styles.sectionTabs}
               >
                 {MANAGE_SECTIONS.map((item) => (
@@ -738,7 +744,7 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
       <AppText variant="subtitle">{t("manage.team")}</AppText>
       {members.data?.map((member) => (
         <AppText key={member.id}>
-          {member.displayName ?? member.phoneE164} · {member.roleCode}
+          {member.displayName ?? member.phoneE164} · {roleLabel(member.roleCode)}
         </AppText>
       ))}
       <TextField
@@ -757,7 +763,7 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
           <Pressable
             key={code}
             accessibilityRole="button"
-            accessibilityLabel={code}
+            accessibilityLabel={roleLabel(code)}
             accessibilityState={{ selected: role === code }}
             onPress={() => setRole(code)}
             style={[styles.chip, role === code ? styles.chipOn : null]}
@@ -769,7 +775,7 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
                   : tokens.color.text.muted
               }
             >
-              {code}
+              {roleLabel(code)}
             </AppText>
           </Pressable>
         ))}
@@ -789,6 +795,8 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
 }
 
 const styles = StyleSheet.create({
+  // A horizontal ScrollView grows vertically when the section below is short.
+  sectionTabsScroll: { flexGrow: 0 },
   sectionTabs: { gap: tokens.spacing.xs, paddingVertical: tokens.spacing.xxs },
   sectionTab: {
     minHeight: tokens.layout.minTouchTarget,

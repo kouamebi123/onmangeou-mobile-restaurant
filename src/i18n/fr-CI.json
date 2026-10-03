@@ -245,6 +245,13 @@
       "service": "Service",
       "finance": "Finances",
       "team": "Offres et équipe"
+    },
+    "roles": {
+      "OWNER": "Propriétaire",
+      "MANAGER": "Gérant",
+      "KITCHEN": "Cuisine",
+      "CASHIER": "Caisse",
+      "WAITER": "Service en salle"
     }
   },
   "more": {
@@ -435,7 +442,8 @@
       "NO_SHOW": "Signaler une absence"
     },
     "duration": "Occupation prévue : 2 heures. Configurez vos tables avant de confirmer.",
-    "table": "Table attribuée : {name}"
+    "table": "Table attribuée : {name}",
+    "call": "Appeler le {phone}"
   },
   "operations": {
     "loading": "Chargement…",

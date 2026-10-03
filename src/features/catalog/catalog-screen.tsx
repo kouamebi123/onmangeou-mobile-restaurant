@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Switch, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -290,7 +291,7 @@ export function CatalogScreen() {
           {products.data?.map((product) => {
             const available = product.availability === "AVAILABLE";
             return (
-              <View key={product.id} style={styles.card}>
+              <View key={product.id} style={styles.product}>
                 {product.imageUrl ? (
                   <Image
                     source={{ uri: product.imageUrl }}
@@ -298,66 +299,71 @@ export function CatalogScreen() {
                     style={styles.productImage}
                     accessibilityLabel={product.name}
                   />
-                ) : null}
-                <View style={styles.productHead}>
-                  <View style={styles.productBody}>
-                    <AppText variant="subtitle">{product.name}</AppText>
-                    <Price value={product.price} />
+                ) : (
+                  <View style={[styles.productImage, styles.productImageEmpty]}>
+                    <Ionicons
+                      name="restaurant-outline"
+                      size={22}
+                      color={tokens.color.brand.primary}
+                    />
                   </View>
-                  <View
+                )}
+                <View style={styles.productBody}>
+                  <AppText
                     style={[
-                      styles.badge,
-                      available ? styles.badgeOn : styles.badgeOff,
+                      styles.productName,
+                      available ? null : styles.productNameOff,
                     ]}
+                    numberOfLines={2}
+                  >
+                    {product.name}
+                  </AppText>
+                  <Price value={product.price} />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t("catalog.editThisDish")} · ${product.name}`}
+                    onPress={() => openEditor(product)}
+                    hitSlop={8}
                   >
                     <AppText
                       variant="caption"
-                      color={
-                        available
-                          ? tokens.color.brand.primary
-                          : tokens.color.feedback.warning
-                      }
+                      color={tokens.color.brand.primary}
+                      style={styles.productEdit}
                     >
-                      {available
-                        ? t("common.available")
-                        : t("common.unavailable")}
+                      {t("catalog.editThisDish")}
                     </AppText>
-                  </View>
+                  </Pressable>
                 </View>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t("catalog.toggleAvailability")}
-                  disabled={availability.isPending}
-                  onPress={() => {
-                    hapticLight();
-                    availability.mutate({
-                      productId: product.id,
-                      status: available ? "OUT_OF_STOCK" : "AVAILABLE",
-                    });
-                  }}
-                  style={[
-                    styles.toggle,
-                    available ? styles.toggleOn : styles.toggleOff,
-                  ]}
-                >
+                <View style={styles.productSwitch}>
+                  <Switch
+                    accessibilityLabel={`${t("catalog.toggleAvailability")} · ${product.name}`}
+                    value={available}
+                    disabled={availability.isPending}
+                    onValueChange={(next) => {
+                      hapticLight();
+                      availability.mutate({
+                        productId: product.id,
+                        status: next ? "AVAILABLE" : "OUT_OF_STOCK",
+                      });
+                    }}
+                    trackColor={{
+                      false: tokens.color.border.default,
+                      true: tokens.color.brand.primary,
+                    }}
+                    thumbColor={tokens.color.surface.white}
+                  />
                   <AppText
-                    variant="subtitle"
+                    variant="caption"
                     color={
                       available
                         ? tokens.color.brand.primary
                         : tokens.color.feedback.warning
                     }
+                    style={styles.productState}
                   >
-                    {available
-                      ? t("common.available")
-                      : t("common.unavailable")}
+                    {available ? t("common.available") : t("common.unavailable")}
                   </AppText>
-                </Pressable>
-                <Button
-                  label={t("catalog.editThisDish")}
-                  variant="outline"
-                  onPress={() => openEditor(product)}
-                />
+                </View>
               </View>
             );
           })}
@@ -394,37 +400,33 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
-  productImage: {
-    width: "100%",
-    height: 170,
-    borderRadius: tokens.radius.card,
-  },
-  productHead: {
+  product: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: tokens.spacing.sm,
+    padding: tokens.spacing.sm,
+    backgroundColor: tokens.color.surface.white,
+    borderRadius: tokens.radius.card,
+    borderWidth: 1,
+    borderColor: tokens.color.border.default,
   },
-  productBody: { flex: 1, gap: 2 },
-  badge: {
-    borderRadius: tokens.radius.pill,
-    paddingHorizontal: tokens.spacing.sm,
-    paddingVertical: 4,
-  },
-  badgeOn: { backgroundColor: tokens.color.surface.mint },
-  badgeOff: { backgroundColor: tokens.color.brand.cream },
-  toggle: {
-    minHeight: 56,
+  productImage: {
+    width: 64,
+    height: 64,
     borderRadius: tokens.radius.md,
+  },
+  productImageEmpty: {
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-  },
-  toggleOn: {
     backgroundColor: tokens.color.surface.mint,
-    borderColor: tokens.color.brand.primary,
   },
-  toggleOff: {
-    backgroundColor: tokens.color.brand.cream,
-    borderColor: tokens.color.feedback.warning,
+  productBody: { flex: 1, gap: 2 },
+  productName: {
+    fontFamily: tokens.typography.family.semibold,
+    color: tokens.color.brand.deep,
   },
+  productNameOff: { color: tokens.color.text.muted },
+  productEdit: { fontFamily: tokens.typography.family.semibold },
+  productSwitch: { alignItems: "center", gap: 2, minWidth: 76 },
+  productState: { fontFamily: tokens.typography.family.semibold },
 });
