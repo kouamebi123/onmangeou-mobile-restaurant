@@ -46,9 +46,13 @@ function MerchantTabs({ accessToken }: { accessToken: string }) {
           height: 64 + bottomPad,
           paddingBottom: bottomPad,
         },
+        // Five tabs on a narrow phone: « Commandes » was cut to « Comman… ».
+        tabBarItemStyle: { paddingHorizontal: 0 },
+        tabBarAllowFontScaling: false,
         tabBarLabelStyle: {
           fontFamily: tokens.typography.family.semibold,
-          fontSize: tokens.typography.size.xs,
+          fontSize: 11,
+          letterSpacing: -0.1,
         },
       }}
     >

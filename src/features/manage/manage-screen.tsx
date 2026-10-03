@@ -11,7 +11,8 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { Controller, useForm, type UseFormReturn } from "react-hook-form";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,29 +24,24 @@ import {
   createTable,
   fetchEntitlements,
   fetchEstablishments,
-  fetchHours,
   fetchMembers,
   fetchTables,
   hasModule,
   inviteMember,
   MODULE_CODES,
   publishEstablishment,
-  saveHours,
   submitVerification,
   updateEstablishment,
   type Establishment,
 } from "@/api/merchant";
 import { FinancePanel } from "@/features/manage/finance-panel";
+import { HoursPanel } from "@/features/manage/hours-panel";
 import { RestaurantPlaceForm } from "@/features/onboarding/restaurant-place-form";
 import {
   EMPTY_RESTAURANT_PLACE,
-  minutesToClock,
-  parseClockMinutes,
   provisionEstablishment,
   restaurantPlaceSchema,
-  WEEK_DAYS,
   type RestaurantPlaceValues,
-  type WeekDay,
 } from "@/features/onboarding/restaurant-place";
 import { ApiError } from "@/api/envelope";
 import { AppText } from "@/components/app-text";
@@ -65,8 +61,39 @@ import { ImagePickerField } from "@/components/image-picker-field";
 import type { UploadAsset } from "@/api/client";
 import { uploadEstablishmentCover } from "@/api/merchant";
 
+const MANAGE_SECTIONS = ["storefront", "service", "finance", "team"] as const;
+type ManageSection = (typeof MANAGE_SECTIONS)[number];
+
+function toManageSection(value: unknown): ManageSection {
+  return MANAGE_SECTIONS.includes(value as ManageSection)
+    ? (value as ManageSection)
+    : "storefront";
+}
+
 export function ManageScreen() {
   const queryClient = useQueryClient();
+  const params = useLocalSearchParams<{ section?: string }>();
+  const [section, setSection] = useState<ManageSection>(() =>
+    toManageSection(params.section),
+  );
+  // A section stays mounted once opened, so a form being filled in is not lost
+  // when the restaurateur looks at another section and comes back.
+  const [opened, setOpened] = useState<ManageSection[]>(() => [
+    toManageSection(params.section),
+  ]);
+  const openSection = (next: ManageSection) => {
+    setSection(next);
+    setOpened((current) => (current.includes(next) ? current : [...current, next]));
+  };
+
+  useEffect(() => {
+    // Another screen can ask for a section: « Voir les réservations » on Activité.
+    if (params.section) {
+      const next = toManageSection(params.section);
+      setSection(next);
+      setOpened((current) => (current.includes(next) ? current : [...current, next]));
+    }
+  }, [params.section]);
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const setSession = useAuthStore((state) => state.setSession);
 
@@ -170,25 +197,66 @@ export function ManageScreen() {
             </View>
           ))}
           {establishments.data?.[0] ? (
-            <EstablishmentEditor establishment={establishments.data[0]} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <HoursPanel establishmentId={establishments.data[0].id} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <FinancePanel establishmentId={establishments.data[0].id} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <ServicePanel establishmentId={establishments.data[0].id} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <TablesPanel establishmentId={establishments.data[0].id} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <CouponsPanel establishmentId={establishments.data[0].id} />
-          ) : null}
-          {establishments.data?.[0] ? (
-            <TeamPanel establishmentId={establishments.data[0].id} />
+            <>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.sectionTabs}
+              >
+                {MANAGE_SECTIONS.map((item) => (
+                  <Pressable
+                    key={item}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: section === item }}
+                    onPress={() => openSection(item)}
+                    style={[
+                      styles.sectionTab,
+                      section === item ? styles.sectionTabOn : null,
+                    ]}
+                  >
+                    <AppText
+                      color={
+                        section === item
+                          ? tokens.color.text.onBrand
+                          : tokens.color.brand.deep
+                      }
+                      style={styles.sectionTabLabel}
+                    >
+                      {t(`manage.sections.${item}`)}
+                    </AppText>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              {opened.includes("storefront") ? (
+                <View
+                  style={section === "storefront" ? styles.section : styles.hidden}
+                >
+                  <EstablishmentEditor establishment={establishments.data[0]} />
+                  <HoursPanel establishmentId={establishments.data[0].id} />
+                </View>
+              ) : null}
+              {opened.includes("service") ? (
+                <View
+                  style={section === "service" ? styles.section : styles.hidden}
+                >
+                  <ServicePanel establishmentId={establishments.data[0].id} />
+                  <TablesPanel establishmentId={establishments.data[0].id} />
+                </View>
+              ) : null}
+              {opened.includes("finance") ? (
+                <View
+                  style={section === "finance" ? styles.section : styles.hidden}
+                >
+                  <FinancePanel establishmentId={establishments.data[0].id} />
+                </View>
+              ) : null}
+              {opened.includes("team") ? (
+                <View style={section === "team" ? styles.section : styles.hidden}>
+                  <CouponsPanel establishmentId={establishments.data[0].id} />
+                  <TeamPanel establishmentId={establishments.data[0].id} />
+                </View>
+              ) : null}
+            </>
           ) : null}
         </>
       )}
@@ -553,149 +621,6 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   );
 }
 
-const HOUR_DAY_LABELS: Record<WeekDay, string> = {
-  MONDAY: "Lun",
-  TUESDAY: "Mar",
-  WEDNESDAY: "Mer",
-  THURSDAY: "Jeu",
-  FRIDAY: "Ven",
-  SATURDAY: "Sam",
-  SUNDAY: "Dim",
-};
-
-function emptyWeekDays(): Record<WeekDay, boolean> {
-  return {
-    MONDAY: false,
-    TUESDAY: false,
-    WEDNESDAY: false,
-    THURSDAY: false,
-    FRIDAY: false,
-    SATURDAY: false,
-    SUNDAY: false,
-  };
-}
-
-function HoursPanel({ establishmentId }: { establishmentId: string }) {
-  const queryClient = useQueryClient();
-  const [opensAt, setOpensAt] = useState("");
-  const [closesAt, setClosesAt] = useState("");
-  const [weekDays, setWeekDays] =
-    useState<Record<WeekDay, boolean>>(emptyWeekDays);
-  const hours = useQuery({
-    queryKey: ["merchant", "hours", establishmentId],
-    queryFn: () => fetchHours(establishmentId),
-  });
-
-  useEffect(() => {
-    const slots = hours.data ?? [];
-    if (slots.length === 0) {
-      return;
-    }
-    const first = slots[0];
-    if (first) {
-      setOpensAt(minutesToClock(first.opensAtMinutes));
-      setClosesAt(minutesToClock(first.closesAtMinutes));
-    }
-    const next = emptyWeekDays();
-    for (const slot of slots) {
-      if (slot.weekDay in next) {
-        next[slot.weekDay as WeekDay] = true;
-      }
-    }
-    setWeekDays(next);
-  }, [hours.data]);
-
-  const save = useMutation({
-    mutationFn: () => {
-      const selected = WEEK_DAYS.filter((weekDay) => weekDays[weekDay]);
-      if (selected.length === 0) {
-        throw new Error(t("manage.hoursNeedDay"));
-      }
-      let opensAtMinutes = parseClockMinutes(opensAt);
-      let closesAtMinutes = parseClockMinutes(closesAt);
-      if (closesAtMinutes <= opensAtMinutes) {
-        closesAtMinutes += 1440;
-      }
-      return saveHours(
-        establishmentId,
-        selected.map((weekDay) => ({
-          weekDay,
-          opensAtMinutes,
-          closesAtMinutes,
-        })),
-      );
-    },
-    onSuccess: () => {
-      hapticSuccess();
-      void queryClient.invalidateQueries({ queryKey: ["merchant", "hours"] });
-    },
-  });
-
-  return (
-    <View style={styles.card}>
-      <AppText variant="subtitle">{t("manage.hours")}</AppText>
-      <View style={styles.row}>
-        <View style={styles.grow}>
-          <TextField
-            label={t("manage.opensAt")}
-            value={opensAt}
-            onChangeText={setOpensAt}
-            placeholder={t("manage.hoursPlaceholder")}
-          />
-        </View>
-        <View style={styles.grow}>
-          <TextField
-            label={t("manage.closesAt")}
-            value={closesAt}
-            onChangeText={setClosesAt}
-            placeholder={t("manage.hoursPlaceholder")}
-          />
-        </View>
-      </View>
-      <View style={styles.row}>
-        {WEEK_DAYS.map((weekDay) => (
-          <Pressable
-            key={weekDay}
-            accessibilityRole="button"
-            accessibilityLabel={HOUR_DAY_LABELS[weekDay]}
-            accessibilityState={{ selected: weekDays[weekDay] }}
-            onPress={() =>
-              setWeekDays((current) => ({
-                ...current,
-                [weekDay]: !current[weekDay],
-              }))
-            }
-            style={[styles.chip, weekDays[weekDay] ? styles.chipOn : null]}
-          >
-            <AppText
-              color={
-                weekDays[weekDay]
-                  ? tokens.color.brand.primary
-                  : tokens.color.text.muted
-              }
-            >
-              {HOUR_DAY_LABELS[weekDay]}
-            </AppText>
-          </Pressable>
-        ))}
-      </View>
-      {save.error ? (
-        <AppText color={tokens.color.feedback.error}>
-          {save.error instanceof Error
-            ? save.error.message
-            : t("errors.generic")}
-        </AppText>
-      ) : null}
-      <Button
-        label={t("manage.saveHours")}
-        variant="outline"
-        loading={save.isPending}
-        onPress={() => save.mutate()}
-      />
-    </View>
-  );
-}
-
 function TablesPanel({ establishmentId }: { establishmentId: string }) {
   const entitlements = useQuery({
     queryKey: ["merchant", "entitlements"],
@@ -864,6 +789,23 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
 }
 
 const styles = StyleSheet.create({
+  sectionTabs: { gap: tokens.spacing.xs, paddingVertical: tokens.spacing.xxs },
+  sectionTab: {
+    minHeight: tokens.layout.minTouchTarget,
+    paddingHorizontal: tokens.spacing.md,
+    borderRadius: tokens.radius.pill,
+    borderWidth: 1,
+    borderColor: tokens.color.border.default,
+    backgroundColor: tokens.color.surface.white,
+    justifyContent: "center",
+  },
+  sectionTabOn: {
+    backgroundColor: tokens.color.brand.primary,
+    borderColor: tokens.color.brand.primary,
+  },
+  sectionTabLabel: { fontFamily: tokens.typography.family.semibold },
+  section: { gap: tokens.spacing.md },
+  hidden: { display: "none" },
   serviceSection: {
     borderTopWidth: 1,
     borderTopColor: tokens.color.border.default,

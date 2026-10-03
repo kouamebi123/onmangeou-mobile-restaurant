@@ -4,7 +4,15 @@ import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { fetchEstablishments, fetchMerchantOrders, fetchProducts } from '@/api/merchant';
+import {
+  fetchEntitlements,
+  fetchEstablishments,
+  fetchMerchantOrders,
+  fetchMerchantReservations,
+  fetchProducts,
+  hasModule,
+  MODULE_CODES,
+} from '@/api/merchant';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { EmptyState } from '@/components/empty-state';
@@ -45,6 +53,20 @@ export function ActivityScreen() {
     enabled: Boolean(selectedId),
     refetchInterval: 8000,
   });
+
+  const entitlements = useQuery({
+    queryKey: ['merchant', 'entitlements'],
+    queryFn: () => fetchEntitlements(),
+  });
+  const canReserve = hasModule(entitlements.data?.enabledModules ?? [], MODULE_CODES.RESERVATIONS_TABLES);
+  // Same cache key and rhythm as the reservation panel in Gestion.
+  const reservations = useQuery({
+    queryKey: ['merchant', 'reservations', selectedId],
+    queryFn: () => fetchMerchantReservations(selectedId ?? undefined),
+    enabled: Boolean(selectedId) && canReserve,
+    refetchInterval: 15000,
+  });
+  const pendingReservations = (reservations.data ?? []).filter((item) => item.status === 'REQUESTED').length;
 
   const list = establishments.data ?? [];
   const selected = list.find((item) => item.id === selectedId) ?? list[0];
@@ -125,6 +147,32 @@ export function ActivityScreen() {
         </View>
       ) : null}
 
+      {list.length > 0 && canReserve ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('activity.openReservations')}
+          onPress={() => router.push('/manage?section=service')}
+          style={[styles.card, pendingReservations > 0 ? styles.attention : null]}
+        >
+          <View style={styles.cardHead}>
+            <View style={styles.mark}>
+              <Ionicons name="calendar-outline" size={18} color={tokens.color.brand.primary} />
+            </View>
+            <View style={styles.cardBody}>
+              <AppText variant="subtitle">
+                {reservations.isLoading
+                  ? t('common.loading')
+                  : pendingReservations > 0
+                    ? t('activity.reservationsPending', { count: String(pendingReservations) })
+                    : t('activity.reservationsNone')}
+              </AppText>
+              <AppText variant="muted">{t('activity.reservationsDetail')}</AppText>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={tokens.color.text.muted} />
+          </View>
+        </Pressable>
+      ) : null}
+
       {list.length > 0 ? (
         <View style={styles.actions}>
           <Button label={t('activity.openCatalog')} onPress={() => router.push('/catalog')} />
@@ -194,6 +242,7 @@ const styles = StyleSheet.create({
   badgeOn: { backgroundColor: tokens.color.surface.mint },
   badgeOff: { backgroundColor: tokens.color.brand.cream },
   selected: { borderColor: tokens.color.brand.primary },
+  attention: { borderColor: tokens.color.brand.accent, borderWidth: 2 },
   metrics: { flexDirection: 'row', gap: tokens.spacing.sm },
   metric: {
     flex: 1,

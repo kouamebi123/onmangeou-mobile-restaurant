@@ -220,7 +220,17 @@
     "closesAt": "Fermeture",
     "hoursPlaceholder": "HH:MM",
     "saveHours": "Enregistrer les horaires",
-    "hoursNeedDay": "Choisissez au moins un jour.",
+    "hoursNeedDay": "Ouvrez au moins un jour.",
+    "hoursHint": "Chaque jour garde ses propres horaires. Le + ajoute un second service. Une fermeture après minuit se saisit telle quelle : 18:00 – 02:00.",
+    "hoursClosed": "Fermé",
+    "hoursOpenDay": "Ouvert le {day}",
+    "hoursAddRange": "Ajouter un second service",
+    "hoursRemoveRange": "Retirer le second service du {day}",
+    "hoursCopy": "Appliquer aux autres jours ouverts",
+    "hoursInvalid": "Vérifiez les heures du {day} : format HH:MM.",
+    "hoursOverlap": "Les deux services du {day} se chevauchent.",
+    "hoursSaved": "Horaires enregistrés.",
+    "hoursUnsaved": "Modifications non enregistrées.",
     "floorPlan": "Plan de salle",
     "seats": "places",
     "tableName": "Nom de table",
@@ -229,7 +239,13 @@
     "coupons": "Coupons",
     "couponCode": "Code",
     "couponDiscount": "Remise %",
-    "createCoupon": "Créer le coupon"
+    "createCoupon": "Créer le coupon",
+    "sections": {
+      "storefront": "Vitrine",
+      "service": "Service",
+      "finance": "Finances",
+      "team": "Offres et équipe"
+    }
   },
   "more": {
     "title": "Compte",
@@ -344,7 +360,11 @@
     "stock": "Stock",
     "stockDetail": "Passez un plat en rupture sans quitter la cuisine.",
     "alerts": "Alertes",
-    "alertsDetail": "Un rappel dès qu’un plat manque ou qu’un ticket attend."
+    "alertsDetail": "Un rappel dès qu’un plat manque ou qu’un ticket attend.",
+    "openReservations": "Voir les réservations",
+    "reservationsPending": "{count} réservation(s) à confirmer",
+    "reservationsNone": "Aucune réservation à confirmer",
+    "reservationsDetail": "Confirmez ou refusez les demandes de table."
   },
   "orders": {
     "hero": "Les tickets de vos clients, au même endroit.",
@@ -524,5 +544,14 @@
     "APPROVED": "Validée",
     "REJECTED": "Refusée",
     "PAUSED": "Suspendue"
+  },
+  "weekdays": {
+    "MONDAY": "lundi",
+    "TUESDAY": "mardi",
+    "WEDNESDAY": "mercredi",
+    "THURSDAY": "jeudi",
+    "FRIDAY": "vendredi",
+    "SATURDAY": "samedi",
+    "SUNDAY": "dimanche"
   }
 }
