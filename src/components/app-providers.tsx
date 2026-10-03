@@ -75,7 +75,12 @@ export function AppProviders({ children }: AppProvidersProps) {
   const organizationId = useAuthStore((state) => state.organizationId);
   const setSession = useAuthStore((state) => state.setSession);
   const clearSession = useAuthStore((state) => state.clear);
-  const [scopeRecoveryDone, setScopeRecoveryDone] = useState(false);
+  const scopeRecoveryPending = useAuthStore(
+    (state) => state.scopeRecoveryPending,
+  );
+  const finishScopeRecovery = useAuthStore(
+    (state) => state.finishScopeRecovery,
+  );
   const [intro, setIntro] = useState<"loading" | "play" | "done">("loading");
 
   useEffect(() => {
@@ -87,8 +92,13 @@ export function AppProviders({ children }: AppProvidersProps) {
   // produces an identity-only access token, which is valid but has no merchant
   // permissions and therefore leads to a confusing 403 on establishment reads.
   // Recover the merchant scope once at boot before mounting data consumers.
+  // Only a session restored from storage qualifies: right after a sign-in the
+  // store also holds a refresh token without organization for a moment, and
+  // refreshing it here raced with the sign-in flow, replayed the token and got
+  // the brand-new session revoked by the API.
   useEffect(() => {
-    if (!hydrated || !refreshToken || organizationId || scopeRecoveryDone) return;
+    if (!hydrated || !scopeRecoveryPending || !refreshToken || organizationId)
+      return;
 
     let cancelled = false;
     void (async () => {
@@ -101,7 +111,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         if (cancelled) return;
         const membership = me.memberships[0];
         if (!membership) {
-          setScopeRecoveryDone(true);
+          finishScopeRecovery();
           return;
         }
 
@@ -118,7 +128,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         if (error instanceof ApiError && error.problem.status === 401) {
           await clearSession();
         }
-        setScopeRecoveryDone(true);
+        finishScopeRecovery();
       }
     })();
 
@@ -127,10 +137,11 @@ export function AppProviders({ children }: AppProvidersProps) {
     };
   }, [
     clearSession,
+    finishScopeRecovery,
     hydrated,
     organizationId,
     refreshToken,
-    scopeRecoveryDone,
+    scopeRecoveryPending,
     setSession,
   ]);
 
@@ -152,7 +163,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   }, []);
 
   const needsScopeRecovery =
-    hydrated && Boolean(refreshToken) && !organizationId && !scopeRecoveryDone;
+    hydrated && scopeRecoveryPending && Boolean(refreshToken) && !organizationId;
 
   if (!fontsLoaded || !hydrated || intro === "loading" || needsScopeRecovery) {
     return (

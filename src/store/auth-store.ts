@@ -15,7 +15,15 @@ interface AuthState {
   sessionId: string | null;
   sessionScope: string | null;
   organizationId: string | null;
+  /**
+   * True only for a session restored from storage without its organization
+   * (written by an older version of the app). A session opened by signing in
+   * is scoped by the sign-in flow itself: recovering it in parallel would
+   * replay the same refresh token and the API would revoke the whole session.
+   */
+  scopeRecoveryPending: boolean;
   hydrate: () => Promise<void>;
+  finishScopeRecovery: () => void;
   setSession: (
     tokens: TokenPair,
     organizationId?: string | null,
@@ -46,6 +54,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   sessionId: null,
   sessionScope: null,
   organizationId: null,
+  scopeRecoveryPending: false,
 
   hydrate: async () => {
     const stored = await readStoredSession();
@@ -56,8 +65,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       sessionId: stored?.sessionId ?? null,
       sessionScope: stored?.sessionScope ?? stored?.sessionId ?? null,
       organizationId: stored?.organizationId ?? null,
+      scopeRecoveryPending:
+        Boolean(stored?.refreshToken) && !stored?.organizationId,
     });
   },
+
+  finishScopeRecovery: () => set({ scopeRecoveryPending: false }),
 
   setSession: async (tokens, organizationId, isRefresh = false) => {
     const nextOrganizationId =
@@ -74,6 +87,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       sessionId: tokens.sessionId,
       sessionScope: isRefresh ? get().sessionScope : tokens.sessionId,
       organizationId: nextOrganizationId,
+      // A new sign-in owns its own scoping; a recovered scope ends the recovery.
+      scopeRecoveryPending:
+        isRefresh && !nextOrganizationId ? get().scopeRecoveryPending : false,
     });
   },
 
@@ -105,6 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       sessionId: null,
       sessionScope: null,
       organizationId: null,
+      scopeRecoveryPending: false,
     });
   },
 }));
