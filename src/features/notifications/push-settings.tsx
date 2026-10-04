@@ -115,7 +115,7 @@ export function PushSettings({ headless = false }: { headless?: boolean }) {
             return;
           refresh();
           const data = response.notification.request.content.data;
-          if (data.kind === "ORDER") router.push("/orders");
+          if (data?.kind === "ORDER") router.push("/orders");
           else router.push("/manage");
           void notifications.clearLastNotificationResponseAsync();
         };

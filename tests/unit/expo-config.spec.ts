@@ -14,11 +14,11 @@ describe('Expo Go / EAS restaurant configuration', () => {
     expect(config.runtimeVersion).toEqual({ policy: 'sdkVersion' });
   });
 
-  it('uses the SDK 54 native stack used by the client', () => {
-    expect(pkg.dependencies.expo).toMatch(/^54\./);
-    expect(pkg.dependencies['react-native']).toBe('0.81.5');
-    expect(pkg.dependencies['expo-updates']).toMatch(/29\./);
-    expect(pkg.dependencies['expo-image-picker']).toMatch(/17\./);
+  it('uses the SDK 57 native stack used by the client', () => {
+    expect(pkg.dependencies.expo).toMatch(/^[~^]?57\./);
+    expect(pkg.dependencies['react-native']).toBe('0.86.3');
+    expect(pkg.dependencies['expo-updates']).toMatch(/57\./);
+    expect(pkg.dependencies['expo-image-picker']).toMatch(/57\./);
     expect(config.plugins).not.toContain('expo-image');
     expect(pkg.scripts['start:go']).toContain('--go');
   });

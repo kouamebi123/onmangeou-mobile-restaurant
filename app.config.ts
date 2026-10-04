@@ -10,7 +10,7 @@ const config: ExpoConfig = {
   updates: {
     url: 'https://u.expo.dev/88a9ebeb-d938-4fb8-b688-cc09d506f326',
   },
-  // Keep Expo Go on SDK 54; native EAS builds use a compatibility fingerprint.
+  // Keep Expo Go on SDK 57; native EAS builds use a compatibility fingerprint.
   runtimeVersion: process.env.ONMANGEOU_NATIVE_RUNTIME === '1'
     ? { policy: 'fingerprint' }
     : { policy: 'sdkVersion' },
@@ -52,6 +52,7 @@ const config: ExpoConfig = {
     ],
     'expo-secure-store',
     'expo-font',
+    'expo-sqlite',
     [
       'expo-image-picker',
       {
