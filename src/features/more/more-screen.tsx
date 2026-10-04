@@ -72,7 +72,6 @@ export function MoreScreen() {
 
   return (
     <Screen>
-      <QueuePanel />
       <PageHero
         icon="person"
         hideIcon
@@ -107,6 +106,7 @@ export function MoreScreen() {
           onChangeText={setFullName}
         />
         <ImagePickerField
+          shape="avatar"
           label={t("more.profilePhoto")}
           currentUrl={me.data?.avatarUrl}
           value={avatar}
@@ -126,6 +126,8 @@ export function MoreScreen() {
           onPress={() => saveProfile.mutate()}
         />
       </View>
+
+      <QueuePanel />
 
       <Pressable
         accessibilityRole="button"
@@ -163,7 +165,7 @@ export function MoreScreen() {
       <PushSettings />
       <Button
         label={t("common.signOut")}
-        variant="destructive"
+        variant="outline"
         loading={signOut.isPending}
         onPress={() => signOut.mutate()}
       />

@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { AppState, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { AppState, StyleSheet, View } from "react-native";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { useAuthStore } from "@/store/auth-store";
@@ -64,30 +65,51 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
   if (!scope) return null;
   if (compact)
     return list.data?.length ? (
-      <AppText variant="caption">
-        {t("offlineQueue.count", { count: String(list.data.length) })}
-      </AppText>
+      <View style={styles.banner}>
+        <Ionicons
+          name="cloud-upload-outline"
+          size={16}
+          color={tokens.color.feedback.warning}
+        />
+        <AppText variant="caption" color={tokens.color.feedback.warning} style={styles.bannerLabel}>
+          {t("offlineQueue.count", { count: String(list.data.length) })}
+        </AppText>
+      </View>
     ) : null;
   const items = [...(list.data ?? [])].sort(
     (a, b) => a.createdAt - b.createdAt,
   );
+  const settled = list.isSuccess && items.length === 0;
   return (
-    <View style={{ gap: tokens.spacing.sm }}>
-      <AppText variant="subtitle">{t("offlineQueue.title")}</AppText>
-      <AppText variant="muted">{t("offlineQueue.hint")}</AppText>
-      {list.isError ? <AppText>{t("offlineQueue.unavailable")}</AppText> : null}
-      {list.isSuccess && !items.length ? (
-        <AppText>{t("offlineQueue.empty")}</AppText>
-      ) : null}
+    <View style={styles.card}>
+      <View style={styles.head}>
+        <View style={styles.mark}>
+          <Ionicons
+            name={settled ? "checkmark" : "cloud-upload-outline"}
+            size={18}
+            color={tokens.color.brand.primary}
+          />
+        </View>
+        <View style={styles.headBody}>
+          <AppText variant="subtitle">{t("offlineQueue.title")}</AppText>
+          {/* Nothing waiting: one line is enough, the explanation only matters when something is pending. */}
+          <AppText variant="muted">
+            {settled
+              ? t("offlineQueue.empty")
+              : list.isError
+                ? t("offlineQueue.unavailable")
+                : t("offlineQueue.hint")}
+          </AppText>
+        </View>
+      </View>
       {items.map((item) => (
-        <View key={item.id} style={{ gap: tokens.spacing.xs }}>
-          <AppText>
+        <View key={item.id} style={styles.item}>
+          <AppText style={styles.itemTitle}>
             {t(`offlineQueue.${item.action.kind}`)} ·{" "}
             {t(`offlineQueue.${item.status}`)}
           </AppText>
           <AppText variant="caption">
-            {new Date(item.createdAt).toLocaleString("fr-CI")} ·{" "}
-            {item.action.establishmentId}
+            {new Date(item.createdAt).toLocaleString("fr-FR")}
           </AppText>
           {item.action.kind === "expense" ? (
             <AppText>
@@ -100,9 +122,11 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
               FCFA
             </AppText>
           ) : null}
-          {item.error ? <AppText>{item.error}</AppText> : null}
+          {item.error ? (
+            <AppText color={tokens.color.feedback.error}>{item.error}</AppText>
+          ) : null}
           {confirm === item.id ? (
-            <AppText>{t("offlineQueue.discardHint")}</AppText>
+            <AppText variant="muted">{t("offlineQueue.discardHint")}</AppText>
           ) : null}
           <Button
             variant="outline"
@@ -128,8 +152,56 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
           />
         </View>
       ))}
-      {error ? <AppText>{error}</AppText> : null}
-      <AppText variant="caption">{t("offlineQueue.signOut")}</AppText>
+      {error ? (
+        <AppText color={tokens.color.feedback.error}>{error}</AppText>
+      ) : null}
+      {items.length > 0 ? (
+        <AppText variant="caption" color={tokens.color.feedback.warning}>
+          {t("offlineQueue.signOut")}
+        </AppText>
+      ) : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  banner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: tokens.spacing.xs,
+    paddingHorizontal: tokens.layout.screenPadding,
+    paddingVertical: tokens.spacing.xs,
+    backgroundColor: tokens.color.surface.white,
+    borderBottomWidth: 1,
+    borderBottomColor: tokens.color.border.default,
+  },
+  bannerLabel: { flex: 1, fontFamily: tokens.typography.family.semibold },
+  card: {
+    gap: tokens.spacing.sm,
+    padding: tokens.spacing.md,
+    backgroundColor: tokens.color.surface.white,
+    borderRadius: tokens.radius.card,
+    borderWidth: 1,
+    borderColor: tokens.color.border.default,
+  },
+  head: { flexDirection: "row", alignItems: "center", gap: tokens.spacing.sm },
+  headBody: { flex: 1, gap: 2 },
+  mark: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: tokens.color.surface.mint,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  item: {
+    gap: tokens.spacing.xs,
+    paddingTop: tokens.spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: tokens.color.border.default,
+  },
+  itemTitle: {
+    fontFamily: tokens.typography.family.semibold,
+    color: tokens.color.brand.deep,
+  },
+});
