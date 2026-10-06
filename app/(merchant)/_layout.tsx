@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fetchEntitlements, isMerchantTabEnabled } from '@/api/merchant';
 import { TabIcon } from '@/components/tab-icon';
+import { usePendingOrders } from '@/features/orders/use-pending-orders';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
 import { useAuthStore } from '@/store/auth-store';
@@ -33,6 +34,8 @@ function MerchantTabs({ accessToken }: { accessToken: string }) {
   });
 
   const enabled = entitlements.data?.enabledModules ?? [];
+  const ordersEnabled = isMerchantTabEnabled('orders', enabled);
+  const pendingOrders = usePendingOrders(Boolean(accessToken) && entitlements.isSuccess && ordersEnabled);
 
   return (
     <Tabs
@@ -69,7 +72,18 @@ function MerchantTabs({ accessToken }: { accessToken: string }) {
         options={{
           title: t('tabs.orders'),
           tabBarIcon: ({ color, focused }) => <TabIcon name="orders" color={color} focused={focused} />,
-          href: isMerchantTabEnabled('orders', enabled) ? undefined : null,
+          href: ordersEnabled ? undefined : null,
+          tabBarBadge: pendingOrders > 0 ? pendingOrders : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: tokens.color.brand.accent,
+            color: tokens.color.text.onBrand,
+            fontFamily: tokens.typography.family.semibold,
+            fontSize: 11,
+          },
+          tabBarAccessibilityLabel:
+            pendingOrders > 0
+              ? `${t('tabs.orders')}, ${t('orders.pendingBadge', { count: String(pendingOrders) })}`
+              : t('tabs.orders'),
         }}
       />
       <Tabs.Screen

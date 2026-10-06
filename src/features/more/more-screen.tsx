@@ -12,6 +12,7 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { PageHero } from "@/components/page-hero";
 import { Screen } from "@/components/screen";
+import { Signature } from "@/components/signature";
 import { TextField } from "@/components/text-field";
 import { hapticSuccess } from "@/feedback/haptics";
 import { t } from "@/i18n";
@@ -169,6 +170,7 @@ export function MoreScreen() {
         loading={signOut.isPending}
         onPress={() => signOut.mutate()}
       />
+      <Signature />
     </Screen>
   );
 }

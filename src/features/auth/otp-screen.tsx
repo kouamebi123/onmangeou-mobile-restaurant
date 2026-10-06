@@ -14,6 +14,7 @@ import { Logo } from '@/components/logo';
 import { HeroBlobs } from '@/components/page-hero';
 import { PhoneField } from '@/components/phone-field';
 import { Screen } from '@/components/screen';
+import { Signature } from '@/components/signature';
 import { TextField } from '@/components/text-field';
 import { RestaurantPlaceForm } from '@/features/onboarding/restaurant-place-form';
 import {
@@ -23,6 +24,7 @@ import {
 } from '@/features/onboarding/restaurant-place';
 import { t } from '@/i18n';
 import { useAuthStore } from '@/store/auth-store';
+import { useTransitionStore } from '@/store/transition-store';
 import { tokens } from '@/theme';
 
 const phoneSchema = z.object({
@@ -79,6 +81,9 @@ export function OtpScreen() {
     setDevCode(result.devCode);
     setStep('code');
   };
+
+  const coverWelcome = useTransitionStore((state) => state.coverWelcome);
+  const revealWelcome = useTransitionStore((state) => state.revealWelcome);
 
   const finishSession = async (refreshToken: string) => {
     const me = await fetchMe();
@@ -233,9 +238,13 @@ export function OtpScreen() {
                 setFormError(undefined);
                 try {
                   const pair = await verifyOtp(phone, values.code);
+                  // Le voile couvre l'écran pendant que la session et l'espace commerçant se mettent en place.
+                  await coverWelcome();
                   await setSession(pair);
                   await finishSession(pair.refreshToken);
+                  revealWelcome();
                 } catch (error) {
+                  revealWelcome();
                   setFormError(error instanceof ApiError ? error.problem.detail : t('errors.generic'));
                 }
               })}
@@ -252,6 +261,7 @@ export function OtpScreen() {
           </>
         ) : null}
       </View>
+      <Signature />
     </Screen>
   );
 }

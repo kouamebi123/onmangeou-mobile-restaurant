@@ -69,7 +69,8 @@
     "signOut": "Se déconnecter"
   },
   "app": {
-    "name": "OnMangeOù Restaurant"
+    "name": "OnMangeOù Restaurant",
+    "signedBy": "Signé"
   },
   "intro": {
     "title": "Gérez votre établissement"
@@ -384,8 +385,27 @@
     "ready": "Prêt à retirer",
     "complete": "Remis",
     "notes": "Note",
-    "kitchenQueue": "File cuisine · en cours",
-    "allOrders": "Toutes les commandes",
+    "filters": {
+      "all": "Toutes",
+      "todo": "À traiter",
+      "kitchen": "En cuisine",
+      "ready": "Prêtes"
+    },
+    "filterEmpty": "Aucune commande dans cette file.",
+    "receivedNow": "Reçue à l’instant",
+    "receivedAgo": "Reçue il y a {minutes} min",
+    "receivedHoursAgo": "Reçue il y a {hours} h",
+    "receivedOn": "Reçue le {date}",
+    "late": "Sans réponse depuis {minutes} min",
+    "total": "Total",
+    "call": "Appeler",
+    "callLabel": "Appeler {name}",
+    "pendingBadge": "{count} à traiter",
+    "service": {
+      "DINE_IN": "Sur place",
+      "TAKEAWAY": "À emporter",
+      "DELIVERY": "Livraison"
+    },
     "walkIn": "Ticket comptoir · {name}",
     "walkInCustomer": "Comptoir",
     "noProduct": "Aucun plat disponible",
@@ -561,5 +581,9 @@
     "FRIDAY": "vendredi",
     "SATURDAY": "samedi",
     "SUNDAY": "dimanche"
+  },
+  "transition": {
+    "welcome": "Bienvenue",
+    "ready": "Votre espace est prêt."
   }
 }
