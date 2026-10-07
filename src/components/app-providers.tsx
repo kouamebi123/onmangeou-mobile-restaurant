@@ -23,6 +23,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { fetchMe, refreshTokens } from "@/api/auth";
 import { ApiError } from "@/api/envelope";
 import { BrandIntro } from "@/components/brand-intro";
+import { Uncover } from "@/components/motion";
 import { WelcomeVeil } from "@/components/welcome-veil";
 import { ProfileOnboarding } from "@/components/profile-onboarding";
 import { kvGet, kvSet } from "@/store/kv-store";
@@ -180,6 +181,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       <OfflineSync />
       <View style={styles.shell}>
         <ProfileOnboarding>{children}</ProfileOnboarding>
+        <Uncover color={tokens.color.brand.deep} />
         <WelcomeVeil />
         {intro === "play" ? <BrandIntro onDone={finishIntro} /> : null}
       </View>

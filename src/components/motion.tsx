@@ -173,7 +173,47 @@ export function Expandable({ open, children, gap = 0, style }: ExpandableProps) 
   );
 }
 
+/**
+ * Voile d'ouverture : posé sur l'application au démarrage, à la couleur de
+ * l'écran de chargement, il s'efface pour dévoiler le premier écran au lieu de
+ * le laisser surgir.
+ */
+export function Uncover({ color }: { color: string }) {
+  const [done, setDone] = useState(false);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (done) {
+      return;
+    }
+    const animation = Animated.timing(opacity, {
+      toValue: 0,
+      duration: motion.appearMs,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    });
+    animation.start(({ finished }) => {
+      if (finished) setDone(true);
+    });
+    return () => animation.stop();
+  }, [done, opacity]);
+
+  if (done) {
+    return null;
+  }
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={[styles.cover, { backgroundColor: color, opacity }]}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
+  cover: { ...StyleSheet.absoluteFill, zIndex: 20 },
   stack: { gap: tokens.spacing.md },
   measured: { position: 'absolute', top: 0, left: 0, right: 0 },
 });
