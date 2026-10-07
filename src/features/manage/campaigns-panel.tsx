@@ -5,6 +5,7 @@ import { apiRequest } from "@/api/client";
 import { createIdempotencyKey } from "@/api/device";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear } from "@/components/motion";
 import { TextField } from "@/components/text-field";
 import { t } from "@/i18n";
 import { tokens } from "@/theme";
@@ -110,14 +111,20 @@ export function CampaignsPanel({
         loading={create.isPending}
         onPress={() => create.mutate()}
       />
-      {create.isSuccess ? <AppText>{t("ads.submitted")}</AppText> : null}
-      {create.error || pause.error || list.error ? (
-        <AppText>
-          {(create.error ?? pause.error ?? list.error)?.message}
-        </AppText>
+      {create.isSuccess ? (
+        <Appear>
+          <AppText>{t("ads.submitted")}</AppText>
+        </Appear>
       ) : null}
-      {list.data?.map((c) => (
-        <View key={c.id} style={{ gap: tokens.spacing.xs }}>
+      {create.error || pause.error || list.error ? (
+        <Appear>
+          <AppText>
+            {(create.error ?? pause.error ?? list.error)?.message}
+          </AppText>
+        </Appear>
+      ) : null}
+      {list.data?.map((c, index) => (
+        <Appear key={c.id} index={index} style={{ gap: tokens.spacing.xs }}>
           <AppText>
             {c.title} · {t(`ads.${c.status}`)}
           </AppText>
@@ -132,7 +139,7 @@ export function CampaignsPanel({
               onPress={() => pause.mutate(c.id)}
             />
           ) : null}
-        </View>
+        </Appear>
       ))}
     </View>
   );

@@ -7,6 +7,7 @@ import { changeDeliveryStatus, fetchDeliveries, fetchMerchantReviews, respondRev
 import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
@@ -26,10 +27,11 @@ export function DeliveryPanel({ establishmentId }: { establishmentId: string }) 
   return <View style={{ gap: tokens.spacing.sm }}>
     <AppText variant="subtitle">{t('service.deliveries')}</AppText>
     {list.isPending ? <AppText>{t('operations.loading')}</AppText> : null}
-    {list.isError ? <Button label={t('operations.retry')} onPress={() => void list.refetch()} /> : null}
-    {list.isSuccess && !list.data.length ? <AppText>{t('service.noDeliveries')}</AppText> : null}
-    {change.isError ? <AppText color={tokens.color.feedback.error}>{errorText(change.error)}</AppText> : null}
-    {list.data?.map((item) => <View key={item.id} style={{ gap: tokens.spacing.xs }}>
+    {list.isError ? <Appear><Button label={t('operations.retry')} onPress={() => void list.refetch()} /></Appear> : null}
+    {list.isSuccess && !list.data.length ? <Appear><AppText>{t('service.noDeliveries')}</AppText></Appear> : null}
+    {change.isError ? <Appear><AppText color={tokens.color.feedback.error}>{errorText(change.error)}</AppText></Appear> : null}
+    {/* Relevé toutes les 10 s : la clé reste l'identifiant, une livraison ne rejoue pas son apparition. */}
+    {list.data?.map((item) => <Appear key={item.id} style={{ gap: tokens.spacing.xs }}>
       <AppText>{item.public_ref} · {t(`operations.status.${item.status}`)}</AppText>
       <AppText>{item.customer_name} · {item.address_text}</AppText>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs }}>
@@ -37,7 +39,7 @@ export function DeliveryPanel({ establishmentId }: { establishmentId: string }) 
           disabled={change.isPending} loading={change.isPending && change.variables?.id === item.id}
           onPress={() => change.mutate({ id: item.id, status })} />)}
       </View>
-    </View>)}
+    </Appear>)}
   </View>;
 }
 
@@ -46,9 +48,9 @@ export function ReviewPanel({ establishmentId }: { establishmentId: string }) {
   return <View style={{ gap: tokens.spacing.sm }}>
     <AppText variant="subtitle">{t('service.reviews')}</AppText>
     {list.isPending ? <AppText>{t('operations.loading')}</AppText> : null}
-    {list.isError ? <Button label={t('operations.retry')} onPress={() => void list.refetch()} /> : null}
-    {list.isSuccess && !list.data.length ? <AppText>{t('service.noReviews')}</AppText> : null}
-    {list.data?.map((item) => <ReviewReply key={item.id} item={item} />)}
+    {list.isError ? <Appear><Button label={t('operations.retry')} onPress={() => void list.refetch()} /></Appear> : null}
+    {list.isSuccess && !list.data.length ? <Appear><AppText>{t('service.noReviews')}</AppText></Appear> : null}
+    {list.data?.map((item, index) => <Appear key={item.id} index={index}><ReviewReply item={item} /></Appear>)}
   </View>;
 }
 
@@ -67,7 +69,7 @@ function ReviewReply({ item }: { item: { id: string; score: number; body: string
       onChangeText={(value) => { setBody(value); save.reset(); }} />
     <Button label={t('service.sendReply')} loading={save.isPending} disabled={body.trim().length < 2}
       onPress={() => save.mutate()} />
-    {save.isSuccess ? <AppText>{t('operations.saved')}</AppText> : null}
-    {save.isError ? <AppText color={tokens.color.feedback.error}>{errorText(save.error)}</AppText> : null}
+    {save.isSuccess ? <Appear><AppText>{t('operations.saved')}</AppText></Appear> : null}
+    {save.isError ? <Appear><AppText color={tokens.color.feedback.error}>{errorText(save.error)}</AppText></Appear> : null}
   </View>;
 }

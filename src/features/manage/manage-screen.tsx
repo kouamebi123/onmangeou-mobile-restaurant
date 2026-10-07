@@ -48,6 +48,7 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { Appear } from "@/components/motion";
 import { PageHero } from "@/components/page-hero";
 import { Screen } from "@/components/screen";
 import { SectionHeading } from "@/components/section-heading";
@@ -160,11 +161,15 @@ export function ManageScreen() {
             title={t("empty.organization")}
             detail={t("empty.organizationDetail")}
           />
-          <CreateRestaurantCard form={form} creating={create} />
+          <Appear index={1}>
+            <CreateRestaurantCard form={form} creating={create} />
+          </Appear>
         </>
       ) : (
         <>
-          <SectionHeading title={t("manage.establishments")} />
+          <Appear>
+            <SectionHeading title={t("manage.establishments")} />
+          </Appear>
           {establishments.isLoading ? (
             <AppText variant="muted">{t("common.loading")}</AppText>
           ) : null}
@@ -177,90 +182,104 @@ export function ManageScreen() {
                 title={t("empty.establishments")}
                 detail={t("empty.establishmentsDetail")}
               />
-              <CreateRestaurantCard form={form} creating={create} />
+              <Appear index={1}>
+                <CreateRestaurantCard form={form} creating={create} />
+              </Appear>
             </>
           ) : null}
-          {establishments.data?.map((establishment) => (
-            <View key={establishment.id} style={styles.card}>
-              <View style={styles.row}>
-                <View style={styles.mark}>
-                  <Ionicons
-                    name="storefront-outline"
-                    size={18}
-                    color={tokens.color.brand.primary}
-                  />
-                </View>
-                <View style={styles.body}>
-                  <AppText variant="subtitle">{establishment.name}</AppText>
-                  <AppText variant="muted">
-                    {[establishment.district, establishment.city]
-                      .filter(Boolean)
-                      .join(" · ") || establishment.city}
-                  </AppText>
+          {establishments.data?.map((establishment, index) => (
+            <Appear key={establishment.id} index={index}>
+              <View style={styles.card}>
+                <View style={styles.row}>
+                  <View style={styles.mark}>
+                    <Ionicons
+                      name="storefront-outline"
+                      size={18}
+                      color={tokens.color.brand.primary}
+                    />
+                  </View>
+                  <View style={styles.body}>
+                    <AppText variant="subtitle">{establishment.name}</AppText>
+                    <AppText variant="muted">
+                      {[establishment.district, establishment.city]
+                        .filter(Boolean)
+                        .join(" · ") || establishment.city}
+                    </AppText>
+                  </View>
                 </View>
               </View>
-            </View>
+            </Appear>
           ))}
           {establishments.data?.[0] ? (
             <>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.sectionTabsScroll}
-                contentContainerStyle={styles.sectionTabs}
-              >
-                {MANAGE_SECTIONS.map((item) => (
-                  <Pressable
-                    key={item}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: section === item }}
-                    onPress={() => openSection(item)}
-                    style={[
-                      styles.sectionTab,
-                      section === item ? styles.sectionTabOn : null,
-                    ]}
-                  >
-                    <AppText
-                      color={
-                        section === item
-                          ? tokens.color.text.onBrand
-                          : tokens.color.brand.deep
-                      }
-                      style={styles.sectionTabLabel}
+              <Appear>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.sectionTabsScroll}
+                  contentContainerStyle={styles.sectionTabs}
+                >
+                  {MANAGE_SECTIONS.map((item) => (
+                    <Pressable
+                      key={item}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: section === item }}
+                      onPress={() => openSection(item)}
+                      style={[
+                        styles.sectionTab,
+                        section === item ? styles.sectionTabOn : null,
+                      ]}
                     >
-                      {t(`manage.sections.${item}`)}
-                    </AppText>
-                  </Pressable>
-                ))}
-              </ScrollView>
+                      <AppText
+                        color={
+                          section === item
+                            ? tokens.color.text.onBrand
+                            : tokens.color.brand.deep
+                        }
+                        style={styles.sectionTabLabel}
+                      >
+                        {t(`manage.sections.${item}`)}
+                      </AppText>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </Appear>
+              {/* Une section reste montée après sa première ouverture (saisie
+                  conservée) ; son apparition en fondu se rejoue à chaque retour. */}
               {opened.includes("storefront") ? (
-                <View
+                <Appear
+                  visible={section === "storefront"}
                   style={section === "storefront" ? styles.section : styles.hidden}
                 >
                   <EstablishmentEditor establishment={establishments.data[0]} />
                   <HoursPanel establishmentId={establishments.data[0].id} />
-                </View>
+                </Appear>
               ) : null}
               {opened.includes("service") ? (
-                <View
+                <Appear
+                  visible={section === "service"}
                   style={section === "service" ? styles.section : styles.hidden}
                 >
                   <ServicePanel establishmentId={establishments.data[0].id} />
                   <TablesPanel establishmentId={establishments.data[0].id} />
-                </View>
+                </Appear>
               ) : null}
               {opened.includes("finance") ? (
-                <View
+                <Appear
+                  visible={section === "finance"}
                   style={section === "finance" ? styles.section : styles.hidden}
                 >
                   <FinancePanel establishmentId={establishments.data[0].id} />
-                </View>
+                </Appear>
               ) : null}
               {opened.includes("team") ? (
-                <View style={section === "team" ? styles.section : styles.hidden}>
+                <Appear
+                  visible={section === "team"}
+                  style={section === "team" ? styles.section : styles.hidden}
+                >
                   <CouponsPanel establishmentId={establishments.data[0].id} />
                   <TeamPanel establishmentId={establishments.data[0].id} />
-                </View>
+                </Appear>
               ) : null}
             </>
           ) : null}
@@ -282,11 +301,13 @@ function CreateRestaurantCard({
       <AppText variant="muted">{t("manage.createLead")}</AppText>
       <RestaurantPlaceForm control={form.control} setValue={form.setValue} />
       {creating.isError ? (
-        <AppText color={tokens.color.feedback.error}>
-          {creating.error instanceof ApiError
-            ? creating.error.problem.detail
-            : t("errors.generic")}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>
+            {creating.error instanceof ApiError
+              ? creating.error.problem.detail
+              : t("errors.generic")}
+          </AppText>
+        </Appear>
       ) : null}
       <Button
         label={t("manage.createRestaurant")}
@@ -458,16 +479,20 @@ function EstablishmentEditor({
         )}
       />
       {save.isError ? (
-        <AppText color={tokens.color.feedback.error}>
-          {save.error instanceof ApiError
-            ? save.error.problem.detail
-            : t("errors.generic")}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>
+            {save.error instanceof ApiError
+              ? save.error.problem.detail
+              : t("errors.generic")}
+          </AppText>
+        </Appear>
       ) : null}
       {save.isSuccess ? (
-        <AppText color={tokens.color.brand.primary}>
-          {t("manage.saved")}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.brand.primary}>
+            {t("manage.saved")}
+          </AppText>
+        </Appear>
       ) : null}
       <Button
         label={t("common.save")}
@@ -476,14 +501,16 @@ function EstablishmentEditor({
       />
       <AppText variant="subtitle">{t("manage.amenities")}</AppText>
       {quickAction.error ? (
-        <AppText
-          accessibilityLiveRegion="polite"
-          color={tokens.color.feedback.error}
-        >
-          {quickAction.error instanceof ApiError
-            ? quickAction.error.problem.detail
-            : t("errors.generic")}
-        </AppText>
+        <Appear>
+          <AppText
+            accessibilityLiveRegion="polite"
+            color={tokens.color.feedback.error}
+          >
+            {quickAction.error instanceof ApiError
+              ? quickAction.error.problem.detail
+              : t("errors.generic")}
+          </AppText>
+        </Appear>
       ) : null}
       <View style={styles.row}>
         <AmenityToggle
@@ -524,7 +551,9 @@ function EstablishmentEditor({
         />
       </View>
       {establishment.verifiedAt ? (
-        <AppText variant="muted">{t("manage.verified")}</AppText>
+        <Appear>
+          <AppText variant="muted">{t("manage.verified")}</AppText>
+        </Appear>
       ) : (
         <Button
           label={t("manage.requestVerification")}
@@ -536,7 +565,9 @@ function EstablishmentEditor({
         />
       )}
       {establishment.status === "PUBLISHED" ? (
-        <AppText variant="muted">{t("manage.published")}</AppText>
+        <Appear>
+          <AppText variant="muted">{t("manage.published")}</AppText>
+        </Appear>
       ) : (
         <Button
           label={t("manage.publish")}
@@ -600,30 +631,32 @@ function ServicePanel({ establishmentId }: { establishmentId: string }) {
   }
 
   return (
-    <CompletionCard>
-      <SectionHeading title={t("service.title")} />
-      {hasReservations ? (
-        <View style={styles.serviceSection}>
-          <ReservationPanel establishmentId={establishmentId} />
-        </View>
-      ) : null}
-      {hasDelivery ? (
-        <View style={styles.serviceSection}>
-          <DeliveryPanel establishmentId={establishmentId} />
-        </View>
-      ) : null}
-      {hasReviews ? (
-        <View style={styles.serviceSection}>
-          <ReviewPanel establishmentId={establishmentId} />
-        </View>
-      ) : null}
-      {hasMarketing ? (
-        <View style={styles.serviceSection}>
-          <EventsPanel establishmentId={establishmentId} />
-          <CampaignsPanel establishmentId={establishmentId} />
-        </View>
-      ) : null}
-    </CompletionCard>
+    <Appear>
+      <CompletionCard>
+        <SectionHeading title={t("service.title")} />
+        {hasReservations ? (
+          <View style={styles.serviceSection}>
+            <ReservationPanel establishmentId={establishmentId} />
+          </View>
+        ) : null}
+        {hasDelivery ? (
+          <View style={styles.serviceSection}>
+            <DeliveryPanel establishmentId={establishmentId} />
+          </View>
+        ) : null}
+        {hasReviews ? (
+          <View style={styles.serviceSection}>
+            <ReviewPanel establishmentId={establishmentId} />
+          </View>
+        ) : null}
+        {hasMarketing ? (
+          <View style={styles.serviceSection}>
+            <EventsPanel establishmentId={establishmentId} />
+            <CampaignsPanel establishmentId={establishmentId} />
+          </View>
+        ) : null}
+      </CompletionCard>
+    </Appear>
   );
 }
 
@@ -657,54 +690,60 @@ function TablesPanel({ establishmentId }: { establishmentId: string }) {
     return null;
   }
   return (
-    <View style={styles.card}>
-      <AppText variant="subtitle">{t("manage.floorPlan")}</AppText>
-      {tables.error ? (
-        <ErrorState onRetry={() => void tables.refetch()} />
-      ) : null}
-      {tables.data?.map((table) => (
-        <AppText key={table.id}>
-          {table.name} · {table.seats} {t("manage.seats")}
-        </AppText>
-      ))}
-      <TextField
-        label={t("manage.tableName")}
-        value={name}
-        onChangeText={setName}
-        editable={!create.isPending}
-        maxLength={80}
-      />
-      <TextField
-        label={t("manage.covers")}
-        keyboardType="number-pad"
-        value={seats}
-        onChangeText={setSeats}
-        editable={!create.isPending}
-        maxLength={3}
-      />
-      {create.error ? (
-        <AppText
-          accessibilityLiveRegion="polite"
-          color={tokens.color.feedback.error}
-        >
-          {create.error instanceof ApiError
-            ? create.error.problem.detail
-            : t("errors.generic")}
-        </AppText>
-      ) : null}
-      <Button
-        label={t("manage.addTable")}
-        variant="outline"
-        disabled={
-          name.trim().length === 0 ||
-          !/^\d{1,3}$/.test(seats) ||
-          Number(seats) < 1 ||
-          Number(seats) > 100
-        }
-        loading={create.isPending}
-        onPress={() => create.mutate()}
-      />
-    </View>
+    <Appear>
+      <View style={styles.card}>
+        <AppText variant="subtitle">{t("manage.floorPlan")}</AppText>
+        {tables.error ? (
+          <ErrorState onRetry={() => void tables.refetch()} />
+        ) : null}
+        {tables.data?.map((table, index) => (
+          <Appear key={table.id} index={index}>
+            <AppText>
+              {table.name} · {table.seats} {t("manage.seats")}
+            </AppText>
+          </Appear>
+        ))}
+        <TextField
+          label={t("manage.tableName")}
+          value={name}
+          onChangeText={setName}
+          editable={!create.isPending}
+          maxLength={80}
+        />
+        <TextField
+          label={t("manage.covers")}
+          keyboardType="number-pad"
+          value={seats}
+          onChangeText={setSeats}
+          editable={!create.isPending}
+          maxLength={3}
+        />
+        {create.error ? (
+          <Appear>
+            <AppText
+              accessibilityLiveRegion="polite"
+              color={tokens.color.feedback.error}
+            >
+              {create.error instanceof ApiError
+                ? create.error.problem.detail
+                : t("errors.generic")}
+            </AppText>
+          </Appear>
+        ) : null}
+        <Button
+          label={t("manage.addTable")}
+          variant="outline"
+          disabled={
+            name.trim().length === 0 ||
+            !/^\d{1,3}$/.test(seats) ||
+            Number(seats) < 1 ||
+            Number(seats) > 100
+          }
+          loading={create.isPending}
+          onPress={() => create.mutate()}
+        />
+      </View>
+    </Appear>
   );
 }
 
@@ -742,10 +781,12 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
   return (
     <View style={styles.card}>
       <AppText variant="subtitle">{t("manage.team")}</AppText>
-      {members.data?.map((member) => (
-        <AppText key={member.id}>
-          {member.displayName ?? member.phoneE164} · {roleLabel(member.roleCode)}
-        </AppText>
+      {members.data?.map((member, index) => (
+        <Appear key={member.id} index={index}>
+          <AppText>
+            {member.displayName ?? member.phoneE164} · {roleLabel(member.roleCode)}
+          </AppText>
+        </Appear>
       ))}
       <TextField
         label={t("manage.memberName")}
@@ -781,7 +822,9 @@ function TeamPanel({ establishmentId }: { establishmentId: string }) {
         ))}
       </View>
       {error ? (
-        <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        </Appear>
       ) : null}
       <Button
         label={t("manage.inviteMember")}

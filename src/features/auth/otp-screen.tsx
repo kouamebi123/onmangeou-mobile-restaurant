@@ -11,6 +11,7 @@ import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Logo } from '@/components/logo';
+import { Appear } from '@/components/motion';
 import { HeroBlobs } from '@/components/page-hero';
 import { PhoneField } from '@/components/phone-field';
 import { Screen } from '@/components/screen';
@@ -121,19 +122,25 @@ export function OtpScreen() {
         <AppText variant="caption" color={tokens.color.brand.accent} style={styles.kicker}>
           {t('auth.kicker')}
         </AppText>
-        <AppText variant="title" color={tokens.color.text.onBrand} style={styles.title}>
-          {step === 'welcome' ? t('auth.welcomeTitle') : intent === 'signup' ? t('auth.signupTitle') : t('auth.title')}
-        </AppText>
-        <AppText variant="muted" color={tokens.color.surface.mint}>
-          {step === 'welcome' ? t('auth.welcomeLede') : t('auth.lede')}
-        </AppText>
+        <Appear key={step === 'welcome' ? 'welcome' : intent} style={styles.heroText}>
+          <AppText variant="title" color={tokens.color.text.onBrand} style={styles.title}>
+            {step === 'welcome' ? t('auth.welcomeTitle') : intent === 'signup' ? t('auth.signupTitle') : t('auth.title')}
+          </AppText>
+          <AppText variant="muted" color={tokens.color.surface.mint}>
+            {step === 'welcome' ? t('auth.welcomeLede') : t('auth.lede')}
+          </AppText>
+        </Appear>
       </View>
 
       <View style={styles.card}>
-        {formError ? <AppText color={tokens.color.feedback.error}>{formError}</AppText> : null}
+        {formError ? (
+          <Appear>
+            <AppText color={tokens.color.feedback.error}>{formError}</AppText>
+          </Appear>
+        ) : null}
 
         {step === 'welcome' ? (
-          <>
+          <Appear key="welcome">
             <Button
               label={t('auth.signup')}
               onPress={() => {
@@ -151,11 +158,11 @@ export function OtpScreen() {
                 setStep('phone');
               }}
             />
-          </>
+          </Appear>
         ) : null}
 
         {step === 'register' ? (
-          <>
+          <Appear key="register">
             <AppText variant="muted">{t('auth.signupLede')}</AppText>
             <RestaurantPlaceForm control={registerForm.control} setValue={registerForm.setValue} showOwnerName />
             <Button
@@ -172,11 +179,11 @@ export function OtpScreen() {
               })}
             />
             <Button label={t('auth.backWelcome')} variant="ghost" onPress={() => setStep('welcome')} />
-          </>
+          </Appear>
         ) : null}
 
         {step === 'phone' ? (
-          <>
+          <Appear key="phone">
             <Controller
               control={phoneForm.control}
               name="phone"
@@ -206,11 +213,11 @@ export function OtpScreen() {
                 {t('auth.backWelcome')}
               </AppText>
             </Pressable>
-          </>
+          </Appear>
         ) : null}
 
         {step === 'code' ? (
-          <>
+          <Appear key="code">
             {devCode ? (
               <View style={styles.devCode}>
                 <AppText variant="caption" color={tokens.color.brand.primary}>
@@ -258,7 +265,7 @@ export function OtpScreen() {
                 setFormError(undefined);
               }}
             />
-          </>
+          </Appear>
         ) : null}
       </View>
       <Signature />
@@ -286,6 +293,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
+  heroText: { gap: tokens.spacing.sm },
   title: { fontSize: tokens.typography.size.xxl },
   card: {
     gap: tokens.spacing.md,

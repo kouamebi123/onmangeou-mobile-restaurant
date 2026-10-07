@@ -13,7 +13,9 @@ import { createRequestId } from "@/api/device";
 import { ApiError } from "@/api/envelope";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear } from "@/components/motion";
 import { tokens } from "@/theme";
+import { motion } from "@/theme/motion";
 import { t } from "@/i18n";
 
 export function ReviewPhotos({
@@ -100,6 +102,7 @@ export function ReviewPhotos({
               accessibilityLabel={t("reviewPhotos.alt")}
               style={{ width: 96, height: 96, borderRadius: tokens.radius.md }}
               contentFit="cover"
+              transition={motion.imageMs}
               cachePolicy="none"
             />
             {editable ? (
@@ -123,7 +126,7 @@ export function ReviewPhotos({
             onPress={() => void choose()}
           />
           {selection ? (
-            <>
+            <Appear style={{ gap: tokens.spacing.sm }}>
               <Image
                 source={{ uri: selection.uri }}
                 style={{
@@ -144,17 +147,19 @@ export function ReviewPhotos({
                 disabled={busy}
                 onPress={() => setSelection(undefined)}
               />
-            </>
+            </Appear>
           ) : null}
         </>
       ) : null}
       {pickerError || error ? (
-        <AppText selectable color={tokens.color.feedback.error}>
-          {pickerError ||
-            (error instanceof ApiError
-              ? error.problem.detail
-              : t("errors.generic"))}
-        </AppText>
+        <Appear>
+          <AppText selectable color={tokens.color.feedback.error}>
+            {pickerError ||
+              (error instanceof ApiError
+                ? error.problem.detail
+                : t("errors.generic"))}
+          </AppText>
+        </Appear>
       ) : null}
     </View>
   );

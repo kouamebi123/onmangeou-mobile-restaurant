@@ -7,6 +7,7 @@ import type { MeProfile } from '@/api/types';
 import { useAuthStore } from '@/store/auth-store';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { Screen } from '@/components/screen';
 import { TextField } from '@/components/text-field';
 import { ErrorState } from '@/components/error-state';
@@ -40,15 +41,15 @@ export function ProfileOnboarding({ children }: { children: ReactNode }) {
       {profile.isPending ? <ActivityIndicator /> : profile.isError ? (
         <ErrorState onRetry={() => void profile.refetch()} />
       ) : (
-        <>
+        <Appear>
           <AppText variant="title">{t('onboarding.title')}</AppText>
           <AppText>{t('onboarding.detail')}</AppText>
           <TextField label={t('onboarding.name')} value={name} onChangeText={setName}
             maxLength={160} autoCapitalize="words" autoComplete="name" />
-          {save.isError ? <AppText>{t('errors.generic')}</AppText> : null}
+          {save.isError ? <Appear><AppText>{t('errors.generic')}</AppText></Appear> : null}
           <Button label={t('onboarding.save')} loading={save.isPending}
             disabled={name.trim().length < 2} onPress={() => save.mutate()} />
-        </>
+        </Appear>
       )}
       <Button label={t('onboarding.signOut')} variant="ghost" onPress={() => {
         void clear().then(() => client.clear());

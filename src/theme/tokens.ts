@@ -67,6 +67,11 @@ export const tokens = {
     screenPadding: raw.layout.screenPaddingMobile.value,
     minTouchTarget: raw.layout.minTouchTarget.value,
   },
+  motion: {
+    fast: raw.motion.fast.value,
+    base: raw.motion.base.value,
+    slow: raw.motion.slow.value,
+  },
   locale: {
     currencyLabel: raw.locale.currencyLabel.value,
     currencyDecimals: raw.locale.currencyDecimals.value,

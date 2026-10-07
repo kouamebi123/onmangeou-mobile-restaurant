@@ -17,6 +17,7 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { Appear } from "@/components/motion";
 import { PageHero } from "@/components/page-hero";
 import { Price } from "@/components/price";
 import { Screen } from "@/components/screen";
@@ -137,78 +138,88 @@ export function OrdersScreen() {
         subtitle={t("orders.hero")}
       />
       {orders.data && orders.data.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filters}
-          contentContainerStyle={styles.filtersRow}
-        >
-          {ORDER_FILTERS.map((entry) => {
-            const selected = entry === filter;
-            const count = counts[entry];
-            return (
-              <Pressable
-                key={entry}
-                accessibilityRole="button"
-                accessibilityState={{ selected }}
-                accessibilityLabel={`${t(`orders.filters.${entry}`)} (${count})`}
-                onPress={() => {
-                  hapticLight();
-                  setFilter(entry);
-                }}
-                style={[styles.filterChip, selected ? styles.filterChipOn : null]}
-              >
-                <AppText
-                  variant="caption"
-                  color={
-                    selected
-                      ? tokens.color.text.onBrand
-                      : tokens.color.brand.deep
-                  }
-                  style={styles.strong}
-                >
-                  {t(`orders.filters.${entry}`)}
-                </AppText>
-                <View
-                  style={[
-                    styles.filterCount,
-                    selected ? styles.filterCountOn : null,
-                    entry === "todo" && count > 0 && !selected
-                      ? styles.filterCountAlert
-                      : null,
-                  ]}
+        <Appear>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filters}
+            contentContainerStyle={styles.filtersRow}
+          >
+            {ORDER_FILTERS.map((entry) => {
+              const selected = entry === filter;
+              const count = counts[entry];
+              return (
+                <Pressable
+                  key={entry}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={`${t(`orders.filters.${entry}`)} (${count})`}
+                  onPress={() => {
+                    hapticLight();
+                    setFilter(entry);
+                  }}
+                  style={[styles.filterChip, selected ? styles.filterChipOn : null]}
                 >
                   <AppText
                     variant="caption"
                     color={
-                      selected || (entry === "todo" && count > 0)
+                      selected
                         ? tokens.color.text.onBrand
-                        : tokens.color.text.muted
+                        : tokens.color.brand.deep
                     }
                     style={styles.strong}
                   >
-                    {count}
+                    {t(`orders.filters.${entry}`)}
                   </AppText>
-                </View>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+                  <View
+                    style={[
+                      styles.filterCount,
+                      selected ? styles.filterCountOn : null,
+                      entry === "todo" && count > 0 && !selected
+                        ? styles.filterCountAlert
+                        : null,
+                    ]}
+                  >
+                    <AppText
+                      variant="caption"
+                      color={
+                        selected || (entry === "todo" && count > 0)
+                          ? tokens.color.text.onBrand
+                          : tokens.color.text.muted
+                      }
+                      style={styles.strong}
+                    >
+                      {count}
+                    </AppText>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </Appear>
       ) : null}
       {selectedId && products.data?.[0] ? (
-        <Button
-          label={t("orders.walkIn", { name: products.data[0].name })}
-          variant="outline"
-          loading={walkIn.isPending}
-          onPress={() => walkIn.mutate()}
-        />
+        <Appear>
+          <Button
+            label={t("orders.walkIn", { name: products.data[0].name })}
+            variant="outline"
+            loading={walkIn.isPending}
+            onPress={() => walkIn.mutate()}
+          />
+        </Appear>
       ) : null}
 
-      {walkIn.isSuccess ? <AppText>{t("offlineQueue.saved")}</AppText> : null}
+      {walkIn.isSuccess ? (
+        <Appear>
+          <AppText>{t("offlineQueue.saved")}</AppText>
+        </Appear>
+      ) : null}
       {walkIn.isError ? (
-        <AppText color={tokens.color.feedback.error}>
-          {walkIn.error.message}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>
+            {walkIn.error.message}
+          </AppText>
+        </Appear>
       ) : null}
       {orders.isLoading ? <Skeleton height={140} /> : null}
       {orders.isError ? (
@@ -222,26 +233,38 @@ export function OrdersScreen() {
       ) : null}
 
       {change.error instanceof ApiError ? (
-        <AppText color={tokens.color.feedback.error}>
-          {change.error.problem.detail}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>
+            {change.error.problem.detail}
+          </AppText>
+        </Appear>
       ) : null}
 
-      {orders.data && orders.data.length > 0 && visible.length === 0 ? (
-        <AppText variant="muted" style={styles.filterEmpty}>
-          {t("orders.filterEmpty")}
-        </AppText>
+      {/* La liste se fond à chaque changement de filtre. Un ticket garde sa clé :
+          il ne rejoue rien au relevé (toutes les 8 s) ni au changement d'état. */}
+      {orders.data && orders.data.length > 0 ? (
+        <Appear key={filter}>
+          {visible.length === 0 ? (
+            <Appear>
+              <AppText variant="muted" style={styles.filterEmpty}>
+                {t("orders.filterEmpty")}
+              </AppText>
+            </Appear>
+          ) : null}
+          {visible.map((order) => (
+            <Appear key={order.id}>
+              <TicketCard
+                order={order}
+                now={now}
+                busy={change.isPending}
+                onAction={(status) =>
+                  change.mutate({ orderId: order.id, status })
+                }
+              />
+            </Appear>
+          ))}
+        </Appear>
       ) : null}
-
-      {visible.map((order) => (
-        <TicketCard
-          key={order.id}
-          order={order}
-          now={now}
-          busy={change.isPending}
-          onAction={(status) => change.mutate({ orderId: order.id, status })}
-        />
-      ))}
     </Screen>
   );
 }

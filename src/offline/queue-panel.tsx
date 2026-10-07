@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppState, StyleSheet, View } from "react-native";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear, Expandable } from "@/components/motion";
 import { useAuthStore } from "@/store/auth-store";
 import { t } from "@/i18n";
 import { tokens } from "@/theme";
@@ -64,18 +65,22 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
   });
   if (!scope) return null;
   if (compact)
-    return list.data?.length ? (
-      <View style={styles.banner}>
-        <Ionicons
-          name="cloud-upload-outline"
-          size={16}
-          color={tokens.color.feedback.warning}
-        />
-        <AppText variant="caption" color={tokens.color.feedback.warning} style={styles.bannerLabel}>
-          {t("offlineQueue.count", { count: String(list.data.length) })}
-        </AppText>
-      </View>
-    ) : null;
+    return (
+      <Expandable open={Boolean(list.data?.length)}>
+        {list.data?.length ? (
+          <View style={styles.banner}>
+            <Ionicons
+              name="cloud-upload-outline"
+              size={16}
+              color={tokens.color.feedback.warning}
+            />
+            <AppText variant="caption" color={tokens.color.feedback.warning} style={styles.bannerLabel}>
+              {t("offlineQueue.count", { count: String(list.data.length) })}
+            </AppText>
+          </View>
+        ) : null}
+      </Expandable>
+    );
   const items = [...(list.data ?? [])].sort(
     (a, b) => a.createdAt - b.createdAt,
   );
@@ -84,26 +89,30 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
     <View style={styles.card}>
       <View style={styles.head}>
         <View style={styles.mark}>
-          <Ionicons
-            name={settled ? "checkmark" : "cloud-upload-outline"}
-            size={18}
-            color={tokens.color.brand.primary}
-          />
+          <Appear key={settled ? "settled" : "pending"}>
+            <Ionicons
+              name={settled ? "checkmark" : "cloud-upload-outline"}
+              size={18}
+              color={tokens.color.brand.primary}
+            />
+          </Appear>
         </View>
         <View style={styles.headBody}>
           <AppText variant="subtitle">{t("offlineQueue.title")}</AppText>
           {/* Nothing waiting: one line is enough, the explanation only matters when something is pending. */}
-          <AppText variant="muted">
-            {settled
-              ? t("offlineQueue.empty")
-              : list.isError
-                ? t("offlineQueue.unavailable")
-                : t("offlineQueue.hint")}
-          </AppText>
+          <Appear key={settled ? "empty" : list.isError ? "unavailable" : "hint"}>
+            <AppText variant="muted">
+              {settled
+                ? t("offlineQueue.empty")
+                : list.isError
+                  ? t("offlineQueue.unavailable")
+                  : t("offlineQueue.hint")}
+            </AppText>
+          </Appear>
         </View>
       </View>
       {items.map((item) => (
-        <View key={item.id} style={styles.item}>
+        <Appear key={item.id} style={styles.item}>
           <AppText style={styles.itemTitle}>
             {t(`offlineQueue.${item.action.kind}`)} ·{" "}
             {t(`offlineQueue.${item.status}`)}
@@ -123,10 +132,14 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
             </AppText>
           ) : null}
           {item.error ? (
-            <AppText color={tokens.color.feedback.error}>{item.error}</AppText>
+            <Appear>
+              <AppText color={tokens.color.feedback.error}>{item.error}</AppText>
+            </Appear>
           ) : null}
           {confirm === item.id ? (
-            <AppText variant="muted">{t("offlineQueue.discardHint")}</AppText>
+            <Appear>
+              <AppText variant="muted">{t("offlineQueue.discardHint")}</AppText>
+            </Appear>
           ) : null}
           <Button
             variant="outline"
@@ -150,15 +163,19 @@ export function QueuePanel({ compact = false }: { compact?: boolean }) {
               }
             }}
           />
-        </View>
+        </Appear>
       ))}
       {error ? (
-        <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        </Appear>
       ) : null}
       {items.length > 0 ? (
-        <AppText variant="caption" color={tokens.color.feedback.warning}>
-          {t("offlineQueue.signOut")}
-        </AppText>
+        <Appear>
+          <AppText variant="caption" color={tokens.color.feedback.warning}>
+            {t("offlineQueue.signOut")}
+          </AppText>
+        </Appear>
       ) : null}
     </View>
   );

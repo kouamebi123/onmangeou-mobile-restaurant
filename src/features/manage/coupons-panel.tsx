@@ -5,6 +5,7 @@ import { createIdempotencyKey } from '@/api/device';
 import { createCoupon, fetchCoupons, fetchEntitlements, hasModule, MODULE_CODES, setCouponActive } from '@/api/merchant';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear, Expandable } from '@/components/motion';
 import { TextField } from '@/components/text-field';
 import { hapticSuccess } from '@/feedback/haptics';
 import { t } from '@/i18n';
@@ -47,16 +48,16 @@ export function CouponsPanel({ establishmentId }: { establishmentId: string }) {
   const valid = /^[A-Z0-9_-]{3,40}$/.test(code.trim().toUpperCase()) && /^\d{1,3}$/.test(percent)
     && Number(percent) >= 1 && Number(percent) <= 100 && /^(0|[1-9]\d{0,14})$/.test(minimum || '0');
   if (!enabled) return null;
-  return <CompletionCard>
+  return <Appear><CompletionCard>
     <AppText variant="subtitle">{t('manage.coupons')}</AppText>
     <AppText variant="muted">{t('couponManager.hint')}</AppText>
     {coupons.isPending ? <AppText>{t('couponManager.loading')}</AppText> : null}
     <CompletionError error={coupons.error} />
-    {coupons.isError ? <Button label={t('couponManager.retry')} variant="outline" onPress={() => { void coupons.refetch(); }} /> : null}
-    {items?.length === 0 ? <AppText variant="muted">{t('couponManager.empty')}</AppText> : null}
-    {items?.map(item => {
+    {coupons.isError ? <Appear><Button label={t('couponManager.retry')} variant="outline" onPress={() => { void coupons.refetch(); }} /></Appear> : null}
+    {items?.length === 0 ? <Appear><AppText variant="muted">{t('couponManager.empty')}</AppText></Appear> : null}
+    {items?.map((item, index) => {
       const expired = Boolean(item.expires_at && new Date(item.expires_at).getTime() <= Date.now());
-      return <View key={item.id} style={{ gap: tokens.spacing.xs, padding: tokens.spacing.md, borderRadius: tokens.radius.card, backgroundColor: tokens.color.surface.mint }}>
+      return <Appear key={item.id} index={index} style={{ gap: tokens.spacing.xs, padding: tokens.spacing.md, borderRadius: tokens.radius.card, backgroundColor: tokens.color.surface.mint }}>
         <AppText variant="subtitle" selectable>{item.code} · −{item.discount_bps / 100} %</AppText>
         <AppText>{t(expired ? 'couponManager.expired' : item.active ? 'couponManager.active' : 'couponManager.inactive')}</AppText>
         <AppText variant="muted">{t('couponManager.minimumLabel', { amount: item.minimum_amount })}</AppText>
@@ -64,14 +65,16 @@ export function CouponsPanel({ establishmentId }: { establishmentId: string }) {
         {!expired ? <Button label={t(item.active ? 'couponManager.disable' : 'couponManager.enable')} variant="outline"
           loading={status.isPending && status.variables?.id === item.id} disabled={status.isPending}
           onPress={() => { status.reset(); setConfirmation({ id: item.id, active: !item.active, code: item.code }); }} /> : null}
-        {confirmation?.id === item.id ? <>
-          <AppText>{t(confirmation.active ? 'couponManager.confirmEnable' : 'couponManager.confirmDisable', { code: item.code })}</AppText>
-          <Button label={t('couponManager.confirm')} loading={status.isPending} onPress={() => status.mutate(confirmation)} />
-          <Button label={t('couponManager.cancel')} variant="ghost" disabled={status.isPending} onPress={() => setConfirmation(null)} />
-        </> : null}
-      </View>;
+        <Expandable open={confirmation?.id === item.id} gap={tokens.spacing.xs} style={{ gap: tokens.spacing.xs }}>
+          {confirmation?.id === item.id ? <>
+            <AppText>{t(confirmation.active ? 'couponManager.confirmEnable' : 'couponManager.confirmDisable', { code: item.code })}</AppText>
+            <Button label={t('couponManager.confirm')} loading={status.isPending} onPress={() => status.mutate(confirmation)} />
+            <Button label={t('couponManager.cancel')} variant="ghost" disabled={status.isPending} onPress={() => setConfirmation(null)} />
+          </> : null}
+        </Expandable>
+      </Appear>;
     })}
-    {coupons.hasNextPage ? <Button label={t('couponManager.more')} variant="outline" loading={coupons.isFetchingNextPage} onPress={() => { void coupons.fetchNextPage(); }} /> : null}
+    {coupons.hasNextPage ? <Appear><Button label={t('couponManager.more')} variant="outline" loading={coupons.isFetchingNextPage} onPress={() => { void coupons.fetchNextPage(); }} /></Appear> : null}
     <CompletionError error={status.error} />
     <AppText variant="subtitle">{t('manage.createCoupon')}</AppText>
     <TextField label={t('manage.couponCode')} value={code} onChangeText={setCode} autoCorrect={false} autoCapitalize="characters" maxLength={40} editable={!create.isPending} />
@@ -89,5 +92,5 @@ export function CouponsPanel({ establishmentId }: { establishmentId: string }) {
     <AppText variant="muted">{t('couponManager.conditions')}</AppText>
     <CompletionError error={create.error} />
     <Button label={t('manage.createCoupon')} disabled={!valid} loading={create.isPending} onPress={() => create.mutate()} />
-  </CompletionCard>;
+  </CompletionCard></Appear>;
 }

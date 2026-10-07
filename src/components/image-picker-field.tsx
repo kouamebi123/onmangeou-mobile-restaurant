@@ -7,13 +7,17 @@ import { useState } from 'react';
 import type { UploadAsset } from '@/api/client';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
+import { motion } from '@/theme/motion';
 
-export function ImagePickerField({ label, value, currentUrl, onChange, shape = 'wide' }: {
+export function ImagePickerField({ label, value, currentUrl, onChange, shape = 'wide', fadeMs = motion.imageMs }: {
   label: string;
   /** `avatar` : aperçu rond et compact, pour une photo de profil. */
   shape?: 'wide' | 'avatar';
+  /** Fondu de l'aperçu. À 0 dans une section repliable : elle remonte son contenu en fin d'ouverture, le fondu serait rejoué. */
+  fadeMs?: number;
   value?: UploadAsset;
   currentUrl?: string | null;
   onChange: (asset: UploadAsset | undefined) => void;
@@ -42,7 +46,7 @@ export function ImagePickerField({ label, value, currentUrl, onChange, shape = '
   const actions = (
     <View style={styles.actions}>
       <Button label={source ? t('imagePicker.change') : t('imagePicker.choose')} variant="outline" loading={busy} onPress={() => void choose()} />
-      {value ? <Button label={t('common.cancel')} variant="ghost" onPress={() => onChange(undefined)} /> : null}
+      {value ? <Appear><Button label={t('common.cancel')} variant="ghost" onPress={() => onChange(undefined)} /></Appear> : null}
     </View>
   );
   if (shape === 'avatar') {
@@ -51,7 +55,7 @@ export function ImagePickerField({ label, value, currentUrl, onChange, shape = '
         <AppText variant="caption">{label}</AppText>
         <View style={styles.avatarRow}>
           {source ? (
-            <Image source={{ uri: source }} contentFit="cover" style={styles.avatar} accessibilityLabel={label} />
+            <Image source={{ uri: source }} contentFit="cover" transition={fadeMs} style={styles.avatar} accessibilityLabel={label} />
           ) : (
             <View style={[styles.avatar, styles.avatarEmpty]}>
               <Ionicons name="person-outline" size={26} color={tokens.color.brand.primary} />
@@ -62,7 +66,7 @@ export function ImagePickerField({ label, value, currentUrl, onChange, shape = '
             <AppText variant="caption">{t('imagePicker.hint')}</AppText>
           </View>
         </View>
-        {error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{error}</AppText> : null}
+        {error ? <Appear><AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{error}</AppText></Appear> : null}
       </View>
     );
   }
@@ -70,12 +74,12 @@ export function ImagePickerField({ label, value, currentUrl, onChange, shape = '
     <View style={styles.wrap}>
       <AppText variant="subtitle">{label}</AppText>
       {source ? (
-        <Image source={{ uri: source }} contentFit="cover" style={styles.preview} accessibilityLabel={label} />
+        <Image source={{ uri: source }} contentFit="cover" transition={fadeMs} style={styles.preview} accessibilityLabel={label} />
       ) : (
         <View style={styles.empty}><AppText variant="muted">{t('imagePicker.empty')}</AppText></View>
       )}
       {actions}
-      {error ? <AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{error}</AppText> : null}
+      {error ? <Appear><AppText accessibilityLiveRegion="polite" color={tokens.color.feedback.error}>{error}</AppText></Appear> : null}
       <AppText variant="caption">{t('imagePicker.hint')}</AppText>
     </View>
   );

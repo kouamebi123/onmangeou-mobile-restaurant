@@ -5,6 +5,7 @@ import { createIdempotencyKey } from '@/api/device';
 import { cancelEvent,fetchManagedEvents,saveEvent,type RestaurantEvent } from '@/api/completion';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear,Expandable } from '@/components/motion';
 import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
@@ -25,22 +26,23 @@ export function EventsPanel({establishmentId}:{establishmentId:string}){
   {events.isPending?<AppText>{t('common.loading')}</AppText>:null}
   <CompletionError error={events.error}/><CompletionError error={cancel.error}/>
   <Button label={t('ledger.refresh')} variant="ghost" onPress={()=>void events.refetch()}/>
-  {editor&&zone?<EventEditor key={editor==='new'?'new':editor.id} establishmentId={establishmentId} zone={zone}
-   event={editor==='new'?undefined:editor} close={()=>setEditor(null)} done={()=>{setEditor(null);refresh();}}/>:null}
-  {events.data?.pages.flatMap(p=>p.items).map(event=><CompletionCard key={event.id}>
+  {/* Fondu plutôt que glissement : l'éditeur garde sa saisie dans son propre état, qu'un remontage en fin de glissement effacerait. */}
+  {editor&&zone?<Appear key={editor==='new'?'new':editor.id}><EventEditor establishmentId={establishmentId} zone={zone}
+   event={editor==='new'?undefined:editor} close={()=>setEditor(null)} done={()=>{setEditor(null);refresh();}}/></Appear>:null}
+  {events.data?.pages.flatMap(p=>p.items).map((event,index)=><Appear key={event.id} index={index}><CompletionCard>
    <AppText variant="subtitle">{event.title}</AppText>
    <AppText>{new Intl.DateTimeFormat('fr-FR',{timeZone:zone,dateStyle:'medium',timeStyle:'short'}).format(new Date(event.starts_at))}</AppText>
    {event.body?<AppText variant="muted">{event.body}</AppText>:null}
-   {event.cancelled_at?<AppText>{t('eventManager.cancelled')}</AppText>:<>
+   {event.cancelled_at?<Appear><AppText>{t('eventManager.cancelled')}</AppText></Appear>:<>
     {new Date(event.starts_at).getTime()>Date.now()?<Button label={t('eventManager.edit')} variant="outline" onPress={()=>setEditor(event)}/>:null}
     {(new Date(event.ends_at??event.starts_at).getTime()>Date.now())?<Button label={t('eventManager.cancel')} variant="ghost" onPress={()=>setCancelId(event.id)}/>:null}
    </>}
-   {cancelId===event.id?<><AppText>{t('eventManager.confirmCancel')}</AppText>
+   <Expandable open={cancelId===event.id} gap={tokens.spacing.sm} style={{gap:tokens.spacing.sm}}>{cancelId===event.id?<><AppText>{t('eventManager.confirmCancel')}</AppText>
     <Button label={t('eventManager.cancel')} variant="destructive" loading={cancel.isPending} onPress={()=>cancel.mutate(event.id)}/>
-    <Button label={t('common.cancel')} variant="ghost" disabled={cancel.isPending} onPress={()=>setCancelId(null)}/></>:null}
-  </CompletionCard>)}
-  {events.isSuccess&&!events.data.pages[0]?.items.length?<AppText>{t('eventManager.empty')}</AppText>:null}
-  {events.hasNextPage?<Button label={t('ledger.more')} loading={events.isFetchingNextPage} onPress={()=>void events.fetchNextPage()}/>:null}
+    <Button label={t('common.cancel')} variant="ghost" disabled={cancel.isPending} onPress={()=>setCancelId(null)}/></>:null}</Expandable>
+  </CompletionCard></Appear>)}
+  {events.isSuccess&&!events.data.pages[0]?.items.length?<Appear><AppText>{t('eventManager.empty')}</AppText></Appear>:null}
+  {events.hasNextPage?<Appear><Button label={t('ledger.more')} loading={events.isFetchingNextPage} onPress={()=>void events.fetchNextPage()}/></Appear>:null}
  </View>;
 }
 function EventEditor({establishmentId,zone,event,close,done}:{establishmentId:string;zone:string;event?:RestaurantEvent;close:()=>void;done:()=>void}){
@@ -68,17 +70,17 @@ function EventEditor({establishmentId,zone,event,close,done}:{establishmentId:st
   <TextField label={t('service.eventTitle')} value={title} onChangeText={setTitle} maxLength={160}/>
   <TextField label={t('eventManager.description')} value={body} onChangeText={setBody} maxLength={1000} multiline/>
   <Button label={`${day} · ${time} (${zone})`} variant="outline" onPress={()=>setPicker(!picker)}/>
-  {picker?<>
+  <Expandable open={picker} gap={tokens.spacing.sm} style={{gap:tokens.spacing.sm}}>
    <AppText variant="caption">{t('eventManager.day')}</AppText>
    <ScrollView horizontal contentContainerStyle={{gap:tokens.spacing.sm}}>{days.map(d=><Button key={d} label={d.slice(8)+'/'+d.slice(5,7)} variant={d===day?'primary':'outline'} onPress={()=>setDay(d)}/>)}</ScrollView>
    <AppText variant="caption">{t('eventManager.time')}</AppText>
    <ScrollView horizontal contentContainerStyle={{gap:tokens.spacing.sm}}>{times.map(hour=><Button key={hour} label={hour} variant={hour===time?'primary':'outline'} onPress={()=>setTime(hour)}/>)}</ScrollView>
-  </>:null}
+  </Expandable>
   <AppText>{t('eventManager.duration')}</AppText>
   <View style={{flexDirection:'row',flexWrap:'wrap',gap:tokens.spacing.sm}}>
    {[...new Set([60,120,180,240,initialDuration])].map(minutes=><Button key={minutes} label={t('eventManager.minutes',{value:String(minutes)})} variant={duration===minutes?'primary':'outline'} onPress={()=>setDuration(minutes)}/>)}
   </View>
-  {!valid?<AppText variant="caption">{t('eventManager.invalid')}</AppText>:null}
+  {!valid?<Appear><AppText variant="caption">{t('eventManager.invalid')}</AppText></Appear>:null}
   <CompletionError error={save.error}/>
   <Button label={t('eventManager.save')} disabled={!valid} loading={save.isPending} onPress={()=>save.mutate()}/>
   <Button label={t('common.cancel')} variant="ghost" disabled={save.isPending} onPress={close}/>

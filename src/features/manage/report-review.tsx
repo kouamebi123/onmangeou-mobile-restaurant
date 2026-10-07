@@ -6,6 +6,7 @@ import { ApiError } from "@/api/envelope";
 import { useAuthStore } from "@/store/auth-store";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear, Expandable } from "@/components/motion";
 import { TextField } from "@/components/text-field";
 import { tokens } from "@/theme";
 import { t } from "@/i18n";
@@ -24,9 +25,11 @@ export function ReportReview({ id }: { id: string }) {
   if (!signedIn) return null;
   if (report.isSuccess)
     return (
-      <AppText accessibilityLiveRegion="polite">
-        {t("reviewReport.sent")}
-      </AppText>
+      <Appear>
+        <AppText accessibilityLiveRegion="polite">
+          {t("reviewReport.sent")}
+        </AppText>
+      </Appear>
     );
   return (
     <View style={{ gap: tokens.spacing.sm }}>
@@ -36,50 +39,54 @@ export function ReportReview({ id }: { id: string }) {
         onPress={() => setOpen(!open)}
         disabled={report.isPending}
       />
-      {open ? (
-        <>
-          <AppText variant="caption">{t("reviewReport.hint")}</AppText>
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: tokens.spacing.xs,
-            }}
-          >
-            {["SPAM", "ABUSE", "PRIVACY", "MISLEADING", "OTHER"].map(
-              (value) => (
-                <Button
-                  key={value}
-                  label={t(`reviewReport.${value}`)}
-                  variant={reason === value ? "primary" : "outline"}
-                  disabled={report.isPending}
-                  onPress={() => setReason(value)}
-                />
-              ),
-            )}
-          </View>
-          <TextField
-            label={t("reviewReport.detail")}
-            value={detail}
-            onChangeText={setDetail}
-            multiline
-            maxLength={1000}
-            editable={!report.isPending}
-          />
-          <Button
-            label={t("reviewReport.send")}
-            loading={report.isPending}
-            disabled={!reason}
-            onPress={() => report.mutate()}
-          />
-        </>
-      ) : null}
+      <Expandable
+        open={open}
+        gap={tokens.spacing.sm}
+        style={{ gap: tokens.spacing.sm }}
+      >
+        <AppText variant="caption">{t("reviewReport.hint")}</AppText>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: tokens.spacing.xs,
+          }}
+        >
+          {["SPAM", "ABUSE", "PRIVACY", "MISLEADING", "OTHER"].map(
+            (value) => (
+              <Button
+                key={value}
+                label={t(`reviewReport.${value}`)}
+                variant={reason === value ? "primary" : "outline"}
+                disabled={report.isPending}
+                onPress={() => setReason(value)}
+              />
+            ),
+          )}
+        </View>
+        <TextField
+          label={t("reviewReport.detail")}
+          value={detail}
+          onChangeText={setDetail}
+          multiline
+          maxLength={1000}
+          editable={!report.isPending}
+        />
+        <Button
+          label={t("reviewReport.send")}
+          loading={report.isPending}
+          disabled={!reason}
+          onPress={() => report.mutate()}
+        />
+      </Expandable>
       {report.error ? (
-        <AppText selectable color={tokens.color.feedback.error}>
-          {report.error instanceof ApiError
-            ? report.error.problem.detail
-            : t("errors.generic")}
-        </AppText>
+        <Appear>
+          <AppText selectable color={tokens.color.feedback.error}>
+            {report.error instanceof ApiError
+              ? report.error.problem.detail
+              : t("errors.generic")}
+          </AppText>
+        </Appear>
       ) : null}
     </View>
   );

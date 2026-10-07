@@ -9,6 +9,7 @@ import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { ErrorState } from '@/components/error-state';
+import { Appear } from '@/components/motion';
 import { PageHero } from '@/components/page-hero';
 import { Screen } from '@/components/screen';
 import { Tap } from '@/components/tap';
@@ -61,73 +62,80 @@ export function PlanScreen() {
       {entitlements.isError ? <ErrorState onRetry={() => void entitlements.refetch()} /> : null}
 
       {entitlements.data ? (
-        <View style={styles.summary}>
-          <AppText variant="caption" color={tokens.color.brand.accent} style={styles.kicker}>
-            {entitlements.data.planCode ?? t('plan.custom')}
-          </AppText>
-          <AppText variant="title" color={tokens.color.text.onBrand} style={styles.summaryTitle}>
-            {dirty
-              ? quoteModules(
-                  entitlements.data.catalog,
-                  Object.entries(draft)
-                    .filter(([, enabled]) => enabled)
-                    .map(([code]) => code),
-                )
-              : (entitlements.data.monthlyQuote?.formatted ?? t('plan.activeCount', { count: String(selectedCount) }))}
-          </AppText>
-          <AppText variant="muted" color={tokens.color.surface.mint}>
-            {t('plan.quoteHint', { count: String(selectedCount) })}
-          </AppText>
-          <AppText variant="muted" color={tokens.color.surface.mint}>
-            {entitlements.data.subscriptionStatus
-              ? t(`plan.status.${entitlements.data.subscriptionStatus}`)
-              : t('plan.status.NONE')}
-          </AppText>
-        </View>
+        <Appear>
+          <View style={styles.summary}>
+            <AppText variant="caption" color={tokens.color.brand.accent} style={styles.kicker}>
+              {entitlements.data.planCode ?? t('plan.custom')}
+            </AppText>
+            <AppText variant="title" color={tokens.color.text.onBrand} style={styles.summaryTitle}>
+              {dirty
+                ? quoteModules(
+                    entitlements.data.catalog,
+                    Object.entries(draft)
+                      .filter(([, enabled]) => enabled)
+                      .map(([code]) => code),
+                  )
+                : (entitlements.data.monthlyQuote?.formatted ?? t('plan.activeCount', { count: String(selectedCount) }))}
+            </AppText>
+            <AppText variant="muted" color={tokens.color.surface.mint}>
+              {t('plan.quoteHint', { count: String(selectedCount) })}
+            </AppText>
+            <AppText variant="muted" color={tokens.color.surface.mint}>
+              {entitlements.data.subscriptionStatus
+                ? t(`plan.status.${entitlements.data.subscriptionStatus}`)
+                : t('plan.status.NONE')}
+            </AppText>
+          </View>
+        </Appear>
       ) : null}
 
-      {entitlements.data?.modules.map((module) => {
+      {entitlements.data?.modules.map((module, index) => {
         const copy = MODULE_COPY[module.code];
         const enabled = draft[module.code] ?? module.enabled;
         const locked = module.code === 'storefront.basic';
         const price = entitlements.data.catalog?.modules.find((entry) => entry.code === module.code)?.monthlyPrice;
         return (
-          <Tap
-            key={module.code}
-            disabled={locked || save.isPending}
-            checked={enabled}
-            onPress={() => setDraft((current) => ({ ...current, [module.code]: !enabled }))}
-            style={[styles.row, enabled ? styles.rowOn : null]}
-          >
-            <View style={styles.rowBody}>
-              <AppText variant="subtitle">{copy?.title ?? module.label}</AppText>
-              <AppText variant="muted">{copy?.detail ?? module.label}</AppText>
-              {locked ? (
-                <AppText variant="caption" color={tokens.color.brand.primary}>
-                  {t('plan.included')}
-                </AppText>
-              ) : (
-                <AppText variant="caption">{price?.formatted ?? '—'}/mois</AppText>
-              )}
-            </View>
-            <View style={[styles.switch, enabled ? styles.switchOn : null]}>
-              <Ionicons
-                name={enabled ? 'checkmark' : 'remove'}
-                size={16}
-                color={enabled ? tokens.color.text.onBrand : tokens.color.text.muted}
-              />
-            </View>
-          </Tap>
+          <Appear key={module.code} index={index}>
+            <Tap
+              disabled={locked || save.isPending}
+              checked={enabled}
+              onPress={() => setDraft((current) => ({ ...current, [module.code]: !enabled }))}
+              style={[styles.row, enabled ? styles.rowOn : null]}
+            >
+              <View style={styles.rowBody}>
+                <AppText variant="subtitle">{copy?.title ?? module.label}</AppText>
+                <AppText variant="muted">{copy?.detail ?? module.label}</AppText>
+                {locked ? (
+                  <AppText variant="caption" color={tokens.color.brand.primary}>
+                    {t('plan.included')}
+                  </AppText>
+                ) : (
+                  <AppText variant="caption">{price?.formatted ?? '—'}/mois</AppText>
+                )}
+              </View>
+              <View style={[styles.switch, enabled ? styles.switchOn : null]}>
+                <Ionicons
+                  name={enabled ? 'checkmark' : 'remove'}
+                  size={16}
+                  color={enabled ? tokens.color.text.onBrand : tokens.color.text.muted}
+                />
+              </View>
+            </Tap>
+          </Appear>
         );
       })}
 
       {save.isError ? (
-        <AppText color={tokens.color.feedback.error}>
-          {save.error instanceof ApiError ? save.error.problem.detail : t('errors.generic')}
-        </AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>
+            {save.error instanceof ApiError ? save.error.problem.detail : t('errors.generic')}
+          </AppText>
+        </Appear>
       ) : null}
       {save.isSuccess && !dirty ? (
-        <AppText color={tokens.color.feedback.success}>{t('plan.saved')}</AppText>
+        <Appear>
+          <AppText color={tokens.color.feedback.success}>{t('plan.saved')}</AppText>
+        </Appear>
       ) : null}
       <Button
         label={t('plan.save')}

@@ -9,6 +9,7 @@ import { ApiError } from "@/api/envelope";
 import { useAuthStore } from "@/store/auth-store";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear } from "@/components/motion";
 import { t } from "@/i18n";
 import { tokens } from "@/theme";
 import { kvGet, kvSet } from "@/store/kv-store";
@@ -194,9 +195,11 @@ export function PushSettings({ headless = false }: { headless?: boolean }) {
         }}
       />
       {message ? (
-        <AppText selectable accessibilityLiveRegion="polite">
-          {message}
-        </AppText>
+        <Appear>
+          <AppText selectable accessibilityLiveRegion="polite">
+            {message}
+          </AppText>
+        </Appear>
       ) : null}
     </View>
   );

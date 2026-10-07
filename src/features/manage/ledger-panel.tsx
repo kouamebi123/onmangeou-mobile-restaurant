@@ -5,6 +5,7 @@ import { createIdempotencyKey } from '@/api/device';
 import { fetchLedger,fetchSettlements,settleLedger,type LedgerEntry,type LedgerKind } from '@/api/completion';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear,Expandable } from '@/components/motion';
 import { TextField } from '@/components/text-field';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
@@ -23,9 +24,9 @@ export function LedgerPanel({establishmentId}:{establishmentId:string}){
   {list.isPending?<AppText>{t('common.loading')}</AppText>:null}
   <CompletionError error={list.error}/>
   <Button variant="ghost" label={t('ledger.refresh')} onPress={()=>void list.refetch()}/>
-  {list.data?.pages.flatMap(p=>p.items).map(item=><LedgerCard key={kind+item.id} item={item} kind={kind}/>)}
-  {list.isSuccess&&!list.data.pages[0]?.items.length?<AppText>{t('ledger.empty')}</AppText>:null}
-  {list.hasNextPage?<Button label={t('ledger.more')} loading={list.isFetchingNextPage} onPress={()=>void list.fetchNextPage()}/>:null}
+  {list.data?.pages.flatMap(p=>p.items).map((item,index)=><Appear key={kind+item.id} index={index}><LedgerCard item={item} kind={kind}/></Appear>)}
+  {list.isSuccess&&!list.data.pages[0]?.items.length?<Appear><AppText>{t('ledger.empty')}</AppText></Appear>:null}
+  {list.hasNextPage?<Appear><Button label={t('ledger.more')} loading={list.isFetchingNextPage} onPress={()=>void list.fetchNextPage()}/></Appear>:null}
  </CompletionCard>;
 }
 function LedgerCard({item,kind}:{item:LedgerEntry;kind:LedgerKind}){
@@ -46,23 +47,24 @@ function LedgerCard({item,kind}:{item:LedgerEntry;kind:LedgerKind}){
   <AppText variant="subtitle">{item.name}</AppText>
   <AppText>{t('ledger.remaining',{amount:item.remaining.formatted})}</AppText>
   <AppText variant="caption">{t('ledger.paid',{paid:item.paid.formatted,total:item.amount.formatted})}</AppText>
-  {item.settled?<AppText color={tokens.color.brand.primary}>{t('ledger.settled')}</AppText>:null}
+  {item.settled?<Appear><AppText color={tokens.color.brand.primary}>{t('ledger.settled')}</AppText></Appear>:null}
   <Button label={open?t('ledger.close'):t('ledger.manage')} variant="outline" onPress={()=>setOpen(!open)}/>
-  {open?<>
+  {/* La section glisse ; son contenu déjà présent à l'ouverture n'a pas de fondu propre (il serait rejoué en fin de glissement). */}
+  <Expandable open={open} gap={tokens.spacing.sm} style={{gap:tokens.spacing.sm}}>
    {!item.settled?<>
     <TextField label={t('finance.amount')} value={amount} keyboardType="number-pad" onChangeText={v=>{setAmount(v);setConfirm(false);}}/>
     <TextField label={t('ledger.reference')} value={reference} maxLength={160} onChangeText={v=>{setReference(v);setConfirm(false);}}/>
-    {!confirm?<Button label={t('ledger.record')} disabled={!valid} onPress={()=>setConfirm(true)}/>:<>
+    {!confirm?<Button label={t('ledger.record')} disabled={!valid} onPress={()=>setConfirm(true)}/>:<Appear style={{gap:tokens.spacing.sm}}>
      <AppText>{t('ledger.confirm',{amount})}</AppText>
      <Button label={t('ledger.confirmAction')} loading={save.isPending} disabled={!valid} onPress={()=>save.mutate()}/>
      <Button label={t('common.cancel')} variant="ghost" disabled={save.isPending} onPress={()=>setConfirm(false)}/>
-    </>}
+    </Appear>}
    </>:null}
-   <CompletionError error={save.error}/>{save.isSuccess?<AppText>{t('ledger.saved')}</AppText>:null}
+   <CompletionError error={save.error}/>{save.isSuccess?<Appear><AppText>{t('ledger.saved')}</AppText></Appear>:null}
    <AppText variant="subtitle">{t('ledger.history')}</AppText>
    {history.isPending?<AppText>{t('common.loading')}</AppText>:null}<CompletionError error={history.error}/>
    {history.data?.map(row=><View key={row.id}><AppText>{row.amount.formatted} · {row.reference}</AppText><AppText variant="caption">{new Date(row.createdAt).toLocaleDateString('fr-FR')}</AppText></View>)}
    {history.isSuccess&&!history.data.length?<AppText>{t('ledger.noHistory')}</AppText>:null}
-  </>:null}
+  </Expandable>
  </CompletionCard>;
 }

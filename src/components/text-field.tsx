@@ -1,6 +1,7 @@
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { AppText } from '@/components/app-text';
+import { Appear } from '@/components/motion';
 import { tokens } from '@/theme';
 
 interface TextFieldProps extends TextInputProps {
@@ -19,9 +20,11 @@ export function TextField({ label, error, style, ...rest }: TextFieldProps) {
         {...rest}
       />
       {error ? (
-        <AppText variant="caption" color={tokens.color.feedback.error}>
-          {error}
-        </AppText>
+        <Appear>
+          <AppText variant="caption" color={tokens.color.feedback.error}>
+            {error}
+          </AppText>
+        </Appear>
       ) : null}
     </View>
   );

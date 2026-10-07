@@ -1,7 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
 
@@ -12,12 +13,12 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <View style={styles.wrap}>
+    <Appear style={styles.wrap}>
       <AppText variant="subtitle" style={styles.title}>
         {message ?? t('errors.generic')}
       </AppText>
       {onRetry ? <Button label={t('common.retry')} onPress={onRetry} /> : null}
-    </View>
+    </Appear>
   );
 }
 

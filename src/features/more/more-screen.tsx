@@ -10,6 +10,7 @@ import { fetchEntitlements } from "@/api/merchant";
 import { ApiError } from "@/api/envelope";
 import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
+import { Appear } from "@/components/motion";
 import { PageHero } from "@/components/page-hero";
 import { Screen } from "@/components/screen";
 import { Signature } from "@/components/signature";
@@ -18,6 +19,7 @@ import { hapticSuccess } from "@/feedback/haptics";
 import { t } from "@/i18n";
 import { useAuthStore } from "@/store/auth-store";
 import { tokens } from "@/theme";
+import { motion } from "@/theme/motion";
 import { PushSettings } from "@/features/notifications/push-settings";
 import { Image } from "expo-image";
 import { ImagePickerField } from "@/components/image-picker-field";
@@ -85,6 +87,7 @@ export function MoreScreen() {
             <Image
               source={{ uri: me.data.avatarUrl }}
               contentFit="cover"
+              transition={motion.imageMs}
               style={styles.avatarImage}
             />
           ) : (
@@ -114,11 +117,13 @@ export function MoreScreen() {
           onChange={setAvatar}
         />
         {saveProfile.isError ? (
-          <AppText color={tokens.color.feedback.error}>
-            {saveProfile.error instanceof ApiError
-              ? saveProfile.error.problem.detail
-              : t("errors.generic")}
-          </AppText>
+          <Appear>
+            <AppText color={tokens.color.feedback.error}>
+              {saveProfile.error instanceof ApiError
+                ? saveProfile.error.problem.detail
+                : t("errors.generic")}
+            </AppText>
+          </Appear>
         ) : null}
         <Button
           label={t("more.saveProfile")}
@@ -144,17 +149,21 @@ export function MoreScreen() {
           />
         </View>
         <View style={styles.planBody}>
-          <AppText variant="caption" color={tokens.color.brand.accent}>
-            {entitlements.data?.planCode ?? t("plan.custom")}
-          </AppText>
+          <Appear key={entitlements.data ? "value" : "loading"}>
+            <AppText variant="caption" color={tokens.color.brand.accent}>
+              {entitlements.data?.planCode ?? t("plan.custom")}
+            </AppText>
+          </Appear>
           <AppText variant="subtitle" color={tokens.color.text.onBrand}>
             {t("more.editPlan")}
           </AppText>
-          <AppText variant="muted" color={tokens.color.surface.mint}>
-            {entitlements.data?.monthlyQuote
-              ? `${entitlements.data.monthlyQuote.formatted} / mois · ${t("more.planDetail", { count: String(activeCount) })}`
-              : t("more.planDetail", { count: String(activeCount) })}
-          </AppText>
+          <Appear key={entitlements.data ? "value" : "loading"}>
+            <AppText variant="muted" color={tokens.color.surface.mint}>
+              {entitlements.data?.monthlyQuote
+                ? `${entitlements.data.monthlyQuote.formatted} / mois · ${t("more.planDetail", { count: String(activeCount) })}`
+                : t("more.planDetail", { count: String(activeCount) })}
+            </AppText>
+          </Appear>
         </View>
         <Ionicons
           name="chevron-forward"
@@ -191,7 +200,9 @@ function InfoLine({
       </View>
       <View style={styles.infoBody}>
         <AppText variant="caption">{label}</AppText>
-        <AppText>{value}</AppText>
+        <Appear key={value}>
+          <AppText>{value}</AppText>
+        </Appear>
       </View>
     </View>
   );

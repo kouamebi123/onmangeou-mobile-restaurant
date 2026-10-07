@@ -1,7 +1,8 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { tokens } from '@/theme';
 
 interface EmptyStateProps {
@@ -13,7 +14,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ title, detail, actionLabel, onAction }: EmptyStateProps) {
   return (
-    <View style={styles.wrap}>
+    <Appear style={styles.wrap}>
       <AppText variant="subtitle" style={styles.title}>
         {title}
       </AppText>
@@ -23,7 +24,7 @@ export function EmptyState({ title, detail, actionLabel, onAction }: EmptyStateP
         </AppText>
       ) : null}
       {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} variant="outline" /> : null}
-    </View>
+    </Appear>
   );
 }
 

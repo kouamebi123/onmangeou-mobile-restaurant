@@ -7,6 +7,7 @@ import { changeReservationStatus, fetchMerchantReservations, fetchReservationHis
 import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear } from '@/components/motion';
 import { StatusChip, type ChipTone } from '@/components/status-chip';
 import { t } from '@/i18n';
 import { tokens } from '@/theme';
@@ -59,15 +60,17 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
     </View>
     <AppText variant="caption">{t('reservation.duration')}</AppText>
     <Button variant="ghost" label={t('reservation.refresh')} loading={listing.isRefetching} onPress={() => { void listing.refetch(); }} />
+    {/* Chaque vue (en cours, historique) arrive en fondu ; une réservation garde sa clé et ne rejoue rien au relevé. */}
+    <Appear key={view} style={styles.list}>
     {listing.isPending ? <AppText>{t('reservation.loading')}</AppText> : null}
-    {listing.isError ? <AppText selectable color={tokens.color.feedback.error}>{t('reservation.error')}</AppText> : null}
-    {listing.isSuccess && !items?.length ? <AppText>{t(view === 'history' ? 'reservation.historyEmpty' : 'service.noReservations')}</AppText> : null}
-    {change.isError ? <AppText selectable color={tokens.color.feedback.error}>
+    {listing.isError ? <Appear><AppText selectable color={tokens.color.feedback.error}>{t('reservation.error')}</AppText></Appear> : null}
+    {listing.isSuccess && !items?.length ? <Appear><AppText>{t(view === 'history' ? 'reservation.historyEmpty' : 'service.noReservations')}</AppText></Appear> : null}
+    {change.isError ? <Appear><AppText selectable color={tokens.color.feedback.error}>
       {change.error instanceof ApiError ? change.error.problem.detail : t('reservation.error')}
-    </AppText> : null}
+    </AppText></Appear> : null}
     {items?.map((item) => {
       const actions = transitions[item.status] ?? [];
-      return <View key={item.id} style={styles.card}>
+      return <Appear key={item.id} style={styles.card}>
         <View style={styles.head}>
           <StatusChip label={t(`reservation.${item.status}`)} tone={reservationTone(item.status)} />
           <AppText variant="caption" selectable>{item.public_ref}</AppText>
@@ -89,15 +92,17 @@ export function ReservationPanel({ establishmentId }: { establishmentId: string 
             loading={change.isPending && change.variables?.id === item.id && change.variables.status === status}
             onPress={() => change.mutate({ id: item.id, status })} />)}
         </View> : null}
-      </View>;
+      </Appear>;
     })}
-    {view === 'history' && history.hasNextPage ? <Button variant="outline" label={t('reservation.loadMore')}
+    {view === 'history' && history.hasNextPage ? <Appear><Button variant="outline" label={t('reservation.loadMore')}
       loading={history.isFetchingNextPage} disabled={history.isFetching}
-      onPress={() => { void history.fetchNextPage(); }} /> : null}
+      onPress={() => { void history.fetchNextPage(); }} /></Appear> : null}
+    </Appear>
   </View>;
 }
 
 const styles = StyleSheet.create({
+  list: { gap: tokens.spacing.sm },
   card: {
     gap: tokens.spacing.xs,
     padding: tokens.spacing.md,

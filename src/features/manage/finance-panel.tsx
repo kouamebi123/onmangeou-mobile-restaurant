@@ -25,6 +25,7 @@ import {
 import { ApiError } from '@/api/envelope';
 import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
+import { Appear, Expandable } from '@/components/motion';
 import { SectionHeading } from '@/components/section-heading';
 import { TextField } from '@/components/text-field';
 import { hapticSuccess } from '@/feedback/haptics';
@@ -96,23 +97,26 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
   }
 
   return (
-    <>
+    <Appear>
       {hasReport ? (
         <>
           <SectionHeading title={t('finance.today')} />
           <View style={styles.card}>
             <AppText variant="subtitle">{t('finance.dailyTitle')}</AppText>
-            <AppText>
-              {t('finance.ordersLine', {
-                count: String(report.data?.ordersCount ?? 0),
-                total: report.data?.ordersTotal.formatted ?? '—',
-              })}
-            </AppText>
-            {hasExpenses ? (
-              <AppText variant="muted">
-                {t('finance.expensesLine', { total: report.data?.expensesTotal.formatted ?? '—' })}
+            <Appear key={report.data ? 'value' : 'loading'} style={styles.stack}>
+              {/* Les chiffres du jour remplacent les tirets d'attente en fondu. */}
+              <AppText>
+                {t('finance.ordersLine', {
+                  count: String(report.data?.ordersCount ?? 0),
+                  total: report.data?.ordersTotal.formatted ?? '—',
+                })}
               </AppText>
-            ) : null}
+              {hasExpenses ? (
+                <AppText variant="muted">
+                  {t('finance.expensesLine', { total: report.data?.expensesTotal.formatted ?? '—' })}
+                </AppText>
+              ) : null}
+            </Appear>
           </View>
         </>
       ) : null}
@@ -178,7 +182,7 @@ export function FinancePanel({ establishmentId }: { establishmentId: string }) {
       {hasStock ? (
         <StockCard establishmentId={establishmentId} items={inventory.data ?? []} onDone={refresh} />
       ) : null}
-    </>
+    </Appear>
   );
 }
 
@@ -217,7 +221,7 @@ function CashCard({
       <AppText variant="subtitle">{t('finance.cash')}</AppText>
       <AppText variant="muted">{t('finance.cashHint')}</AppText>
       {session ? (
-        <>
+        <Appear key="open" style={styles.stack}>
           <AppText>
             {t('finance.cashOpen', { expected: session.expected.formatted, opening: session.openingAmount.formatted })}
           </AppText>
@@ -253,17 +257,19 @@ function CashCard({
             onPress={() => run(() => addCashMovement(session.id, kind, digits(amount), label.trim()))}
           />
           {confirmClose ? (
-            <Button
-              label={t('finance.confirmClose', { expected: session.expected.formatted })}
-              variant="destructive"
-              onPress={() => run(() => closeCashSession(session.id))}
-            />
+            <Appear>
+              <Button
+                label={t('finance.confirmClose', { expected: session.expected.formatted })}
+                variant="destructive"
+                onPress={() => run(() => closeCashSession(session.id))}
+              />
+            </Appear>
           ) : (
             <Button label={t('finance.closeCash')} variant="outline" onPress={() => setConfirmClose(true)} />
           )}
-        </>
+        </Appear>
       ) : (
-        <>
+        <Appear key="closed" style={styles.stack}>
           <TextField
             label={t('finance.openingAmount')}
             keyboardType="number-pad"
@@ -276,9 +282,13 @@ function CashCard({
             disabled={digits(opening).length === 0}
             onPress={() => run(() => openCashSession(establishmentId, digits(opening)))}
           />
-        </>
+        </Appear>
       )}
-      {error ? <AppText color={tokens.color.feedback.error}>{error}</AppText> : null}
+      {error ? (
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        </Appear>
+      ) : null}
     </View>
   );
 }
@@ -306,10 +316,13 @@ function LedgerCard({
     <View style={styles.card}>
       <AppText variant="subtitle">{title}</AppText>
       <AppText variant="muted">{hint}</AppText>
-      {rows.length === 0 ? <AppText variant="muted">{t('finance.emptyLedger')}</AppText> : null}
-      {rows.slice(0, 6).map((row, index) => (
-        <AppText key={`${index}-${row}`}>{row}</AppText>
-      ))}
+      <Appear key={rows.length === 0 ? 'empty' : 'rows'} style={styles.stack}>
+        {/* Les lignes remplacent la mention « vide » en fondu quand elles arrivent. */}
+        {rows.length === 0 ? <AppText variant="muted">{t('finance.emptyLedger')}</AppText> : null}
+        {rows.slice(0, 6).map((row, index) => (
+          <AppText key={`${index}-${row}`}>{row}</AppText>
+        ))}
+      </Appear>
       {fields.map((field) => (
         <TextField
           key={field.key}
@@ -319,7 +332,11 @@ function LedgerCard({
           onChangeText={(text) => setValues((current) => ({ ...current, [field.key]: text }))}
         />
       ))}
-      {error ? <AppText color={tokens.color.feedback.error}>{error}</AppText> : null}
+      {error ? (
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        </Appear>
+      ) : null}
       <Button
         label={submitLabel}
         loading={busy}
@@ -388,16 +405,17 @@ function StockCard({
       <AppText variant="subtitle">{t('finance.stock')}</AppText>
       <AppText variant="muted">{t('finance.stockHint')}</AppText>
       {items.length === 0 ? <AppText variant="muted">{t('finance.emptyStock')}</AppText> : null}
-      {items.map((item) => (
-        <Pressable
-          key={item.id}
-          onPress={() => setSelectedId(item.id)}
-          style={[styles.stockRow, selectedId === item.id ? styles.chipOn : null]}
-        >
-          <AppText color={selectedId === item.id ? tokens.color.text.onBrand : tokens.color.text.primary}>
-            {item.name} · {item.quantity} {item.unit}
-          </AppText>
-        </Pressable>
+      {items.map((item, index) => (
+        <Appear key={item.id} index={index}>
+          <Pressable
+            onPress={() => setSelectedId(item.id)}
+            style={[styles.stockRow, selectedId === item.id ? styles.chipOn : null]}
+          >
+            <AppText color={selectedId === item.id ? tokens.color.text.onBrand : tokens.color.text.primary}>
+              {item.name} · {item.quantity} {item.unit}
+            </AppText>
+          </Pressable>
+        </Appear>
       ))}
       <AppText variant="caption">{t('finance.newArticle')}</AppText>
       <TextField label={t('finance.article')} value={name} onChangeText={setName} />
@@ -418,29 +436,35 @@ function StockCard({
           create.mutate();
         }}
       />
-      {selected ? (
-        <>
-          <AppText variant="caption">{t('finance.moveStock', { name: selected.name })}</AppText>
-          <TextField
-            label={t('finance.delta')}
-            keyboardType="numbers-and-punctuation"
-            value={delta}
-            onChangeText={setDelta}
-            placeholder={t('finance.deltaHint')}
-          />
-          <TextField label={t('finance.reason')} value={reason} onChangeText={setReason} />
-          <Button
-            label={t('finance.recordMove')}
-            loading={move.isPending}
-            disabled={delta.trim().length === 0 || reason.trim().length < 2}
-            onPress={() => {
-              setError(undefined);
-              move.mutate();
-            }}
-          />
-        </>
+      <Expandable open={Boolean(selected)} gap={tokens.spacing.sm} style={styles.stack}>
+        {selected ? (
+          <>
+            <AppText variant="caption">{t('finance.moveStock', { name: selected.name })}</AppText>
+            <TextField
+              label={t('finance.delta')}
+              keyboardType="numbers-and-punctuation"
+              value={delta}
+              onChangeText={setDelta}
+              placeholder={t('finance.deltaHint')}
+            />
+            <TextField label={t('finance.reason')} value={reason} onChangeText={setReason} />
+            <Button
+              label={t('finance.recordMove')}
+              loading={move.isPending}
+              disabled={delta.trim().length === 0 || reason.trim().length < 2}
+              onPress={() => {
+                setError(undefined);
+                move.mutate();
+              }}
+            />
+          </>
+        ) : null}
+      </Expandable>
+      {error ? (
+        <Appear>
+          <AppText color={tokens.color.feedback.error}>{error}</AppText>
+        </Appear>
       ) : null}
-      {error ? <AppText color={tokens.color.feedback.error}>{error}</AppText> : null}
     </View>
   );
 }
@@ -458,6 +482,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
   },
+  stack: { gap: tokens.spacing.sm },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs },
   chip: {
     minHeight: tokens.layout.minTouchTarget,

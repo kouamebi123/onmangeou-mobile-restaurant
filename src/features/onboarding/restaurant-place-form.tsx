@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { fetchModuleCatalog, MODULE_CODES } from '@/api/merchant';
 import { AppText } from '@/components/app-text';
+import { Appear } from '@/components/motion';
 import { PhoneField } from '@/components/phone-field';
 import { Tap } from '@/components/tap';
 import { TextField } from '@/components/text-field';
@@ -232,8 +233,16 @@ export function RestaurantPlaceForm({
 
       <AppText variant="subtitle">{t('auth.modules')}</AppText>
       {catalog.isLoading ? <AppText variant="muted">{t('common.loading')}</AppText> : null}
-      {catalog.isError ? <AppText variant="muted">{t('errors.generic')}</AppText> : null}
-      {catalog.data?.notice ? <AppText variant="muted">{catalog.data.notice}</AppText> : null}
+      {catalog.isError ? (
+        <Appear>
+          <AppText variant="muted">{t('errors.generic')}</AppText>
+        </Appear>
+      ) : null}
+      {catalog.data?.notice ? (
+        <Appear>
+          <AppText variant="muted">{catalog.data.notice}</AppText>
+        </Appear>
+      ) : null}
       <View style={styles.quote}>
         <AppText variant="caption" color={tokens.color.brand.accent}>
           {t('auth.quoteLabel')}
@@ -242,26 +251,27 @@ export function RestaurantPlaceForm({
           {quoteModules(catalog.data, selected)}
         </AppText>
       </View>
-      {(catalog.data?.modules ?? []).map((item) => {
+      {(catalog.data?.modules ?? []).map((item, index) => {
         const copy = MODULE_COPY[item.code];
         const enabled = Boolean(modules?.[item.code]);
         const locked = item.code === MODULE_CODES.STOREFRONT_BASIC;
         return (
-          <Tap
-            key={item.code}
-            disabled={locked}
-            checked={enabled}
-            onPress={() => toggleModule(item.code, enabled, locked)}
-            style={[styles.module, enabled ? styles.moduleOn : null]}
-          >
-            <View style={styles.grow}>
-              <AppText variant="subtitle">{copy?.title ?? item.label}</AppText>
-              <AppText variant="muted">{copy?.detail ?? item.label}</AppText>
-              <AppText variant="caption">
-                {item.included ? t('plan.included') : t('plan.perMonth', { price: item.monthlyPrice.formatted })}
-              </AppText>
-            </View>
-          </Tap>
+          <Appear key={item.code} index={index}>
+            <Tap
+              disabled={locked}
+              checked={enabled}
+              onPress={() => toggleModule(item.code, enabled, locked)}
+              style={[styles.module, enabled ? styles.moduleOn : null]}
+            >
+              <View style={styles.grow}>
+                <AppText variant="subtitle">{copy?.title ?? item.label}</AppText>
+                <AppText variant="muted">{copy?.detail ?? item.label}</AppText>
+                <AppText variant="caption">
+                  {item.included ? t('plan.included') : t('plan.perMonth', { price: item.monthlyPrice.formatted })}
+                </AppText>
+              </View>
+            </Tap>
+          </Appear>
         );
       })}
     </>

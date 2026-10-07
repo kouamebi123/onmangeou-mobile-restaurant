@@ -23,6 +23,7 @@ import { AppText } from "@/components/app-text";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
+import { Appear, Expandable } from "@/components/motion";
 import { PageHero } from "@/components/page-hero";
 import { Price } from "@/components/price";
 import { Screen } from "@/components/screen";
@@ -34,6 +35,7 @@ import { hapticLight, hapticSuccess } from "@/feedback/haptics";
 import { t } from "@/i18n";
 import { useMerchantStore } from "@/store/merchant-store";
 import { tokens } from "@/theme";
+import { motion } from "@/theme/motion";
 
 const productSchema = z.object({
   name: z.string().min(2).max(160),
@@ -164,30 +166,32 @@ export function CatalogScreen() {
       ) : null}
 
       {establishments.data && establishments.data.length > 0 ? (
-        <View style={styles.chips}>
-          {establishments.data.map((establishment) => {
-            const active = selectedId === establishment.id;
-            return (
-              <Pressable
-                key={establishment.id}
-                onPress={() => setSelectedId(establishment.id)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                style={[styles.chip, active ? styles.chipOn : null]}
-              >
-                <AppText
-                  color={
-                    active
-                      ? tokens.color.text.onBrand
-                      : tokens.color.text.primary
-                  }
+        <Appear>
+          <View style={styles.chips}>
+            {establishments.data.map((establishment) => {
+              const active = selectedId === establishment.id;
+              return (
+                <Pressable
+                  key={establishment.id}
+                  onPress={() => setSelectedId(establishment.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  style={[styles.chip, active ? styles.chipOn : null]}
                 >
-                  {establishment.name}
-                </AppText>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <AppText
+                    color={
+                      active
+                        ? tokens.color.text.onBrand
+                        : tokens.color.text.primary
+                    }
+                  >
+                    {establishment.name}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Appear>
       ) : null}
 
       {!establishments.data?.length && establishments.isSuccess ? (
@@ -198,7 +202,7 @@ export function CatalogScreen() {
       ) : null}
 
       {selectedId ? (
-        <>
+        <Appear>
           <View style={styles.card}>
             <Button
               label={formOpen ? t("catalog.hideForm") : t("catalog.showForm")}
@@ -206,7 +210,7 @@ export function CatalogScreen() {
               onPress={() => setFormOpen((open) => !open)}
             />
           </View>
-          {formOpen ? (
+          <Expandable open={formOpen} gap={tokens.spacing.md}>
             <View style={styles.card}>
               <SectionHeading
                 title={editing ? t("catalog.editDish") : t("catalog.newDish")}
@@ -216,6 +220,9 @@ export function CatalogScreen() {
                 currentUrl={editing?.imageUrl}
                 value={image}
                 onChange={setImage}
+                // La section repliable remonte son contenu en fin d'ouverture :
+                // pas de fondu d'image ici, il serait rejoué.
+                fadeMs={0}
               />
               <Controller
                 control={form.control}
@@ -258,13 +265,15 @@ export function CatalogScreen() {
                 )}
               />
               {create.isError || saveEdit.isError ? (
-                <AppText color={tokens.color.feedback.error}>
-                  {create.error instanceof ApiError
-                    ? create.error.problem.detail
-                    : saveEdit.error instanceof ApiError
-                      ? saveEdit.error.problem.detail
-                      : t("errors.generic")}
-                </AppText>
+                <Appear>
+                  <AppText color={tokens.color.feedback.error}>
+                    {create.error instanceof ApiError
+                      ? create.error.problem.detail
+                      : saveEdit.error instanceof ApiError
+                        ? saveEdit.error.problem.detail
+                        : t("errors.generic")}
+                  </AppText>
+                </Appear>
               ) : null}
               <Button
                 label={editing ? t("common.save") : t("common.create")}
@@ -275,7 +284,7 @@ export function CatalogScreen() {
                 )}
               />
             </View>
-          ) : null}
+          </Expandable>
 
           <SectionHeading title={t("catalog.listTitle")} />
           {products.isLoading ? <Skeleton height={80} /> : null}
@@ -288,86 +297,89 @@ export function CatalogScreen() {
               detail={t("empty.productsDetail")}
             />
           ) : null}
-          {products.data?.map((product) => {
+          {products.data?.map((product, index) => {
             const available = product.availability === "AVAILABLE";
             return (
-              <View key={product.id} style={styles.product}>
-                {product.imageUrl ? (
-                  <Image
-                    source={{ uri: product.imageUrl }}
-                    contentFit="cover"
-                    style={styles.productImage}
-                    accessibilityLabel={product.name}
-                  />
-                ) : (
-                  <View style={[styles.productImage, styles.productImageEmpty]}>
-                    <Ionicons
-                      name="restaurant-outline"
-                      size={22}
-                      color={tokens.color.brand.primary}
+              <Appear key={product.id} index={index}>
+                <View style={styles.product}>
+                  {product.imageUrl ? (
+                    <Image
+                      source={{ uri: product.imageUrl }}
+                      contentFit="cover"
+                      transition={motion.imageMs}
+                      style={styles.productImage}
+                      accessibilityLabel={product.name}
                     />
+                  ) : (
+                    <View style={[styles.productImage, styles.productImageEmpty]}>
+                      <Ionicons
+                        name="restaurant-outline"
+                        size={22}
+                        color={tokens.color.brand.primary}
+                      />
+                    </View>
+                  )}
+                  <View style={styles.productBody}>
+                    <AppText
+                      style={[
+                        styles.productName,
+                        available ? null : styles.productNameOff,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {product.name}
+                    </AppText>
+                    <Price value={product.price} />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${t("catalog.editThisDish")} · ${product.name}`}
+                      onPress={() => openEditor(product)}
+                      hitSlop={8}
+                    >
+                      <AppText
+                        variant="caption"
+                        color={tokens.color.brand.primary}
+                        style={styles.productEdit}
+                      >
+                        {t("catalog.editThisDish")}
+                      </AppText>
+                    </Pressable>
                   </View>
-                )}
-                <View style={styles.productBody}>
-                  <AppText
-                    style={[
-                      styles.productName,
-                      available ? null : styles.productNameOff,
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {product.name}
-                  </AppText>
-                  <Price value={product.price} />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`${t("catalog.editThisDish")} · ${product.name}`}
-                    onPress={() => openEditor(product)}
-                    hitSlop={8}
-                  >
+                  <View style={styles.productSwitch}>
+                    <Switch
+                      accessibilityLabel={`${t("catalog.toggleAvailability")} · ${product.name}`}
+                      value={available}
+                      disabled={availability.isPending}
+                      onValueChange={(next) => {
+                        hapticLight();
+                        availability.mutate({
+                          productId: product.id,
+                          status: next ? "AVAILABLE" : "OUT_OF_STOCK",
+                        });
+                      }}
+                      trackColor={{
+                        false: tokens.color.border.default,
+                        true: tokens.color.brand.primary,
+                      }}
+                      thumbColor={tokens.color.surface.white}
+                    />
                     <AppText
                       variant="caption"
-                      color={tokens.color.brand.primary}
-                      style={styles.productEdit}
+                      color={
+                        available
+                          ? tokens.color.brand.primary
+                          : tokens.color.feedback.warning
+                      }
+                      style={styles.productState}
                     >
-                      {t("catalog.editThisDish")}
+                      {available ? t("common.available") : t("common.unavailable")}
                     </AppText>
-                  </Pressable>
+                  </View>
                 </View>
-                <View style={styles.productSwitch}>
-                  <Switch
-                    accessibilityLabel={`${t("catalog.toggleAvailability")} · ${product.name}`}
-                    value={available}
-                    disabled={availability.isPending}
-                    onValueChange={(next) => {
-                      hapticLight();
-                      availability.mutate({
-                        productId: product.id,
-                        status: next ? "AVAILABLE" : "OUT_OF_STOCK",
-                      });
-                    }}
-                    trackColor={{
-                      false: tokens.color.border.default,
-                      true: tokens.color.brand.primary,
-                    }}
-                    thumbColor={tokens.color.surface.white}
-                  />
-                  <AppText
-                    variant="caption"
-                    color={
-                      available
-                        ? tokens.color.brand.primary
-                        : tokens.color.feedback.warning
-                    }
-                    style={styles.productState}
-                  >
-                    {available ? t("common.available") : t("common.unavailable")}
-                  </AppText>
-                </View>
-              </View>
+              </Appear>
             );
           })}
-        </>
+        </Appear>
       ) : null}
     </Screen>
   );
